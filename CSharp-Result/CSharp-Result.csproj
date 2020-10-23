@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net461</TargetFramework>
+        <RootNamespace>CSharp_Result</RootNamespace>
+        <LangVersion>latest</LangVersion>
+    </PropertyGroup>
+
+</Project>

@@ -1,0 +1,61 @@
+{
+  "format": 1,
+  "restore": {
+    "D:\\Documents\\Workspace\\C#Result\\CSharp-Result\\Result-CSharp\\Result-CSharp.csproj": {}
+  },
+  "projects": {
+    "D:\\Documents\\Workspace\\C#Result\\CSharp-Result\\Result-CSharp\\Result-CSharp.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "D:\\Documents\\Workspace\\C#Result\\CSharp-Result\\Result-CSharp\\Result-CSharp.csproj",
+        "projectName": "Result-CSharp",
+        "projectPath": "D:\\Documents\\Workspace\\C#Result\\CSharp-Result\\Result-CSharp\\Result-CSharp.csproj",
+        "packagesPath": "C:\\Users\\ongyu\\.nuget\\packages\\",
+        "outputPath": "D:\\Documents\\Workspace\\C#Result\\CSharp-Result\\Result-CSharp\\obj\\",
+        "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\ongyu\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "netstandard2.1"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "netstandard2.1": {
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "netstandard2.1": {
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "NETStandard.Library": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.102\\RuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}
