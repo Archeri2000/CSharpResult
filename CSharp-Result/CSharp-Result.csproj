@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <OutputType>Class Library</OutputType>
-        <TargetFramework>net461</TargetFramework>
+        <TargetFramework>netcoreapp3.0</TargetFramework>
         <RootNamespace>CSharp_Result</RootNamespace>
         <LangVersion>9.0</LangVersion>
         <Authors>archery2000</Authors>
