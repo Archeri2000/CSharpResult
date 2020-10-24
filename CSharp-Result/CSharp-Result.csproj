@@ -1,9 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <OutputType>Class Library</OutputType>
         <TargetFramework>net461</TargetFramework>
         <RootNamespace>CSharp_Result</RootNamespace>
-        <LangVersion>latest</LangVersion>
+        <LangVersion>9.0</LangVersion>
+        <Authors>archery2000</Authors>
+        <Description>A C# Result Type for Railway Oriented Programming</Description>
+        <Copyright>archery2000</Copyright>
+        <PackageProjectUrl>https://github.com/archery2000/CSharpResult</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/archery2000/CSharpResult.git</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <Version>0.0.1</Version>
     </PropertyGroup>
 
 </Project>
