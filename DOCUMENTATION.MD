@@ -1,4 +1,49 @@
 # Documentation
+
+## Overview
+This library uses 4 method keywords to describe possible computation types. 
+Each of these methods can be further modified by adding **Await** to add Async Effects, and **Each** to operate over a collection
+
+| Keyword  | Description  |
+|---|---|
+| Then | Executes a function and returns the output.|
+| Do | Executes a function and if output is Success, ignore it and return the input. | 
+| If | Executes a predicate and if output is True, ignore it and return the input.|
+| Match | If value is Success, execute first function, else execute second function |
+
+| Modifiers | Description |
+|---|---|
+| Await | Executes an async function and await the result. |
+| Each | Executes a function on every member of a collection. |
+
+For example:
+```c#
+// Normal computation
+result.Then(...)
+    .If(...)
+    .Then(...)
+    .Do(...);
+
+// Async computations mixed with normal computations
+result.ThenAwait(...)
+    .If(...)
+    .ThenAwait(...)
+    .IfAwait(...)
+    .DoAwait(...);
+
+// Collection computations
+results.ThenEach(...)
+    .IfEach(...)
+    .ThenEach(...)
+    .DoEach(...);
+
+// Async Result Collections mixed with normal computations
+results.ThenAwaitEach(...)
+    .IfEach(...)
+    .ThenAwaitEach(...)
+    .IfAwaitEach(...)
+    .DoAwaiteach(...);
+```
 ## Result Type
 The result type allows for functions to return either a successful result or a failure exception. 
 This allows developers to provide context documenting intended errors that could occur, instead of returning null or throwing an exception.
@@ -258,3 +303,5 @@ var result =
             from user in users.GetAsync(key)
             select new UserObj(user, val)
 ```
+
+## Async Results and Collections
