@@ -1,8 +1,0 @@
-D:\Documents\Workspace\C#Result\CSharp-Result\CSharp-Result\bin\Debug\netstandard2.1\CSharp-Result.deps.json
-D:\Documents\Workspace\C#Result\CSharp-Result\CSharp-Result\bin\Debug\netstandard2.1\CSharp-Result.dll
-D:\Documents\Workspace\C#Result\CSharp-Result\CSharp-Result\bin\Debug\netstandard2.1\CSharp-Result.pdb
-D:\Documents\Workspace\C#Result\CSharp-Result\CSharp-Result\obj\Debug\netstandard2.1\CSharp-Result.csprojAssemblyReference.cache
-D:\Documents\Workspace\C#Result\CSharp-Result\CSharp-Result\obj\Debug\netstandard2.1\CSharp-Result.AssemblyInfoInputs.cache
-D:\Documents\Workspace\C#Result\CSharp-Result\CSharp-Result\obj\Debug\netstandard2.1\CSharp-Result.AssemblyInfo.cs
-D:\Documents\Workspace\C#Result\CSharp-Result\CSharp-Result\obj\Debug\netstandard2.1\CSharp-Result.dll
-D:\Documents\Workspace\C#Result\CSharp-Result\CSharp-Result\obj\Debug\netstandard2.1\CSharp-Result.pdb

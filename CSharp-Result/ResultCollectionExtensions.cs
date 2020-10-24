@@ -10,75 +10,75 @@ namespace CSharp_Result
     public static class ResultCollectionExtensions
     {
         /// <summary>
-        /// Checks if all the results in the Collection are not Errors.
+        /// Checks if all the results in the Collection are not Failures.
         /// </summary>
         /// <param name="collection">Collection of results to check</param>
-        /// <typeparam name="T">Type contained in Valid Result</typeparam>
-        /// <returns>True if all results are not Errors</returns>
+        /// <typeparam name="T">Type contained in Success</typeparam>
+        /// <returns>True if all results are not Failures</returns>
         public static bool AllSucceed<T>(this IEnumerable<Result<T>> collection) 
             where T : notnull
         {
-            return collection.All(x => x.IsResult());
+            return collection.All(x => x.IsSuccess());
         }
         
         /// <summary>
-        /// Checks if at least one result in the Collection is not an Error
+        /// Checks if at least one result in the Collection is not a Failure
         /// </summary>
         /// <param name="collection">Collection of results to check</param>
-        /// <typeparam name="T">Type contained in Valid Result</typeparam>
-        /// <returns>True if at least one result is not an Error</returns>
+        /// <typeparam name="T">Type contained in Success</typeparam>
+        /// <returns>True if at least one result is not a Failure</returns>
         public static bool AnySucceed<T>(this IEnumerable<Result<T>> collection) 
             where T : notnull
         {
-            return collection.Any(x => x.IsResult());
+            return collection.Any(x => x.IsSuccess());
         }
         
         /// <summary>
-        /// Checks if all the results in the Collection are Errors.
+        /// Checks if all the results in the Collection are Failures.
         /// </summary>
         /// <param name="collection">Collection of results to check</param>
-        /// <typeparam name="T">Type contained in Valid Result</typeparam>
-        /// <returns>True if all results are Errors</returns>
+        /// <typeparam name="T">Type contained in Success</typeparam>
+        /// <returns>True if all results are Failures</returns>
         public static bool AllFail<T>(this IEnumerable<Result<T>> collection) 
             where T : notnull
         {
-            return collection.All(x => x.IsError());
+            return collection.All(x => x.IsFailure());
         }
         
         /// <summary>
-        /// Checks if at least one result in the Collection is an Error
+        /// Checks if at least one result in the Collection is a Failure
         /// </summary>
         /// <param name="collection">Collection of results to check</param>
-        /// <typeparam name="T">Type contained in Valid Result</typeparam>
-        /// <returns>True if at least one result is an Error</returns>
+        /// <typeparam name="T">Type contained in Success</typeparam>
+        /// <returns>True if at least one result is a Failure</returns>
         public static bool AnyFail<T>(this IEnumerable<Result<T>> collection) 
             where T : notnull
         {
-            return collection.Any(x => x.IsError());
+            return collection.Any(x => x.IsFailure());
         }
 
         /// <summary>
-        /// Gets all the Errors 
+        /// Gets all the Failures 
         /// </summary>
         /// <param name="collection">Collection of results to filter</param>
-        /// <typeparam name="T">Type contained in Valid Result</typeparam>
-        /// <returns>IEnumerable of all the Errors in the Collection</returns>
+        /// <typeparam name="T">Type contained in Success</typeparam>
+        /// <returns>IEnumerable of all the Failures in the Collection</returns>
         public static IEnumerable<Exception> GetFailures<T>(this IEnumerable<Result<T>> collection) 
             where T : notnull
         {
-            return collection.Where(x => x.IsError()).Select(x => x.ErrorOrDefault());
+            return collection.Where(x => x.IsFailure()).Select(x => x.FailureOrDefault());
         }
         
         /// <summary>
-        /// Gets all the Valid Results 
+        /// Gets all the Successes 
         /// </summary>
         /// <param name="collection">Collection of results to filter</param>
-        /// <typeparam name="T">Type contained in Valid Result</typeparam>
-        /// <returns>IEnumerable of all the Valid Results in the Collection</returns>
+        /// <typeparam name="T">Type contained in Success</typeparam>
+        /// <returns>IEnumerable of all the Successes in the Collection</returns>
         public static IEnumerable<T> GetSuccesses<T>(this IEnumerable<Result<T>> collection) 
             where T : notnull
         {
-            return collection.Where(x => x.IsResult()).Select(x => x.ValueOrDefault());
+            return collection.Where(x => x.IsSuccess()).Select(x => x.SuccessOrDefault());
         }
 
         /// <summary>
@@ -109,61 +109,88 @@ namespace CSharp_Result
         public static IEnumerable<Result<T>> ToSeqOfResults<T>(this Result<IEnumerable<T>> collection) 
             where T : notnull
         {
-            if (collection.IsError())
+            if (collection.IsFailure())
             {
-                return new List<Result<T>>{collection.ErrorOrDefault()};
+                return new List<Result<T>>{collection.FailureOrDefault()};
             }
             else
             {
-                return collection.ValueOrDefault().Select(r => new Success<T>(r));
+                return collection.SuccessOrDefault().Select(r => new Success<T>(r));
             }
         }
         
         //TODO: Add Linq???
         
-        public static IEnumerable<Result<TSucc>> DoEach<TSucc, TResult>(this IEnumerable<Result<TSucc>> result,
+        public static IEnumerable<Result<TSucc>> DoEach<TSucc, TResult>(this IEnumerable<Result<TSucc>> results,
             Func<TSucc, Result<TResult>> function)
             where TSucc: notnull
             where TResult: notnull
         {
-            return result.Select(x => x.Do(function));
+            return results.Select(x => x.Do(function));
         }
         
-        public static IEnumerable<Result<TSucc>> DoEach<TSucc, TResult>(this IEnumerable<Result<TSucc>> result,
-            Func<TSucc, TResult> function, Func<Exception, Exception> mapError)
+        public static IEnumerable<Result<TSucc>> DoEach<TSucc, TResult>(this IEnumerable<Result<TSucc>> results,
+            Func<TSucc, TResult> function, Func<Exception, Exception> mapException)
             where TSucc: notnull
         {
-            return result.Select(x => x.Do(function, mapError));
+            return results.Select(x => x.Do(function, mapException));
         }
         
-        public static IEnumerable<Result<TSucc>> DoEach<TSucc>(this IEnumerable<Result<TSucc>> result,
-            Action<TSucc> function, Func<Exception, Exception> mapError)
+        public static IEnumerable<Result<TSucc>> DoEach<TSucc>(this IEnumerable<Result<TSucc>> results,
+            Action<TSucc> function, Func<Exception, Exception> mapException)
             where TSucc: notnull
         {
-            return result.Select(x => x.Do(function, mapError));
+            return results.Select(x => x.Do(function, mapException));
         }
 
-        public static IEnumerable<Result<TResult>> ThenEach<TSucc, TResult>(this IEnumerable<Result<TSucc>> result,
+        public static IEnumerable<Result<TResult>> ThenEach<TSucc, TResult>(this IEnumerable<Result<TSucc>> results,
             Func<TSucc, Result<TResult>> function)
             where TSucc: notnull
             where TResult: notnull
         {
-            return result.Select(x => x.Then(function));
+            return results.Select(x => x.Then(function));
         }
         
-        public static IEnumerable<Result<TResult>> ThenEach<TSucc, TResult>(this IEnumerable<Result<TSucc>> result,
-            Func<TSucc, TResult> function, Func<Exception, Exception> mapError)
+        public static IEnumerable<Result<TResult>> ThenEach<TSucc, TResult>(this IEnumerable<Result<TSucc>> results,
+            Func<TSucc, TResult> function, Func<Exception, Exception> mapException)
             where TSucc: notnull
             where TResult: notnull
         {
-            return result.Select(x => x.Then(function, mapError));
+            return results.Select(x => x.Then(function, mapException));
         }
         
-        public static IEnumerable<Result<Unit>> ThenEach<TSucc>(this IEnumerable<Result<TSucc>> result,
-            Action<TSucc> function, Func<Exception, Exception> mapError)
+        public static IEnumerable<Result<Unit>> ThenEach<TSucc>(this IEnumerable<Result<TSucc>> results,
+            Action<TSucc> function, Func<Exception, Exception> mapException)
             where TSucc: notnull
         {
-            return result.Select(x => x.Then(function, mapError));
+            return results.Select(x => x.Then(function, mapException));
+        }
+        
+        public static IEnumerable<TResult> MatchEach<TSucc, TResult>(this IEnumerable<Result<TSucc>> results,
+            Func<TSucc, TResult> Success, Func<Exception, TResult> Failure)
+        {
+            return results.Select(x => x.Match(Success, Failure));
+        }
+        
+               
+        public static void MatchEach<TSucc>(this IEnumerable<Result<TSucc>> results,
+            Action<TSucc> Success, Action<Exception> Failure)
+        {
+            foreach(var x in results)
+            {
+                x.Match(Success, Failure);
+            }
+        }
+
+        /// <summary>
+        /// Converts a regular collection to an IEnumerable of Results
+        /// </summary>
+        /// <param name="collection">collection to convert</param>
+        /// <typeparam name="T">type contained in collection</typeparam>
+        /// <returns>Collection of results</returns>
+        public static IEnumerable<Result<T>> ToResultCollection<T>(this IEnumerable<T> collection)
+        {
+            return collection.Select(x => x.ToResult());
         }
     }
 }
