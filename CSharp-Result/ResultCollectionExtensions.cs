@@ -119,8 +119,14 @@ namespace CSharp_Result
             }
         }
         
-        //TODO: Add Linq???
-        
+        /// <summary>
+        /// Executes Do on each element of the collection
+        /// </summary>
+        /// <param name="results">Input Async Result Collection</param>
+        /// <param name="function">The function to execute</param>
+        /// <typeparam name="TSucc">Input type</typeparam>
+        /// <typeparam name="TResult">The type of the result of the computation (unused)</typeparam>
+        /// <returns>Collection after executing function on each element</returns>
         public static IEnumerable<Result<TSucc>> DoEach<TSucc, TResult>(this IEnumerable<Result<TSucc>> results,
             Func<TSucc, Result<TResult>> function)
             where TSucc: notnull
@@ -129,6 +135,15 @@ namespace CSharp_Result
             return results.Select(x => x.Do(function));
         }
         
+        /// <summary>
+        /// Executes Do on each element of the collection
+        /// </summary>
+        /// <param name="results">Input Async Result Collection</param>
+        /// <param name="function">The function to execute</param>
+        /// <param name="mapException">The mapping function for the error</param>
+        /// <typeparam name="TSucc">Input type</typeparam>
+        /// <typeparam name="TResult">The type of the result of the computation (unused)</typeparam>
+        /// <returns>Collection after executing function on each element</returns>
         public static IEnumerable<Result<TSucc>> DoEach<TSucc, TResult>(this IEnumerable<Result<TSucc>> results,
             Func<TSucc, TResult> function, Func<Exception, Exception> mapException)
             where TSucc: notnull
@@ -136,6 +151,14 @@ namespace CSharp_Result
             return results.Select(x => x.Do(function, mapException));
         }
         
+        /// <summary>
+        /// Executes Do on each element of the collection
+        /// </summary>
+        /// <param name="results">Input Async Result Collection</param>
+        /// <param name="function">The function to execute</param>
+        /// <param name="mapException">The mapping function for the error</param>
+        /// <typeparam name="TSucc">Input type</typeparam>
+        /// <returns>Collection after executing function on each element</returns>
         public static IEnumerable<Result<TSucc>> DoEach<TSucc>(this IEnumerable<Result<TSucc>> results,
             Action<TSucc> function, Func<Exception, Exception> mapException)
             where TSucc: notnull
@@ -143,6 +166,14 @@ namespace CSharp_Result
             return results.Select(x => x.Do(function, mapException));
         }
 
+        /// <summary>
+        /// Executes Then on each element of the collection
+        /// </summary>
+        /// <param name="results">Input Async Result Collection</param>
+        /// <param name="function">The function to execute</param>
+        /// <typeparam name="TSucc">Input type</typeparam>
+        /// <typeparam name="TResult">The type of the result of the computation (unused)</typeparam>
+        /// <returns>Collection after executing function on each element</returns>
         public static IEnumerable<Result<TResult>> ThenEach<TSucc, TResult>(this IEnumerable<Result<TSucc>> results,
             Func<TSucc, Result<TResult>> function)
             where TSucc: notnull
@@ -151,6 +182,15 @@ namespace CSharp_Result
             return results.Select(x => x.Then(function));
         }
         
+        /// <summary>
+        /// Executes Then on each element of the collection
+        /// </summary>
+        /// <param name="results">Input Async Result Collection</param>
+        /// <param name="function">The function to execute</param>
+        /// <param name="mapException">The mapping function for the error</param>
+        /// <typeparam name="TSucc">Input type</typeparam>
+        /// <typeparam name="TResult">The type of the result of the computation (unused)</typeparam>
+        /// <returns>Collection after executing function on each element</returns>
         public static IEnumerable<Result<TResult>> ThenEach<TSucc, TResult>(this IEnumerable<Result<TSucc>> results,
             Func<TSucc, TResult> function, Func<Exception, Exception> mapException)
             where TSucc: notnull
@@ -159,6 +199,14 @@ namespace CSharp_Result
             return results.Select(x => x.Then(function, mapException));
         }
         
+        /// <summary>
+        /// Executes Then on each element of the collection
+        /// </summary>
+        /// <param name="results">Input Async Result Collection</param>
+        /// <param name="function">The function to execute</param>
+        /// <param name="mapException">The mapping function for the error</param>
+        /// <typeparam name="TSucc">Input type</typeparam>
+        /// <returns>Collection after executing function on each element</returns>
         public static IEnumerable<Result<Unit>> ThenEach<TSucc>(this IEnumerable<Result<TSucc>> results,
             Action<TSucc> function, Func<Exception, Exception> mapException)
             where TSucc: notnull
@@ -166,13 +214,58 @@ namespace CSharp_Result
             return results.Select(x => x.Then(function, mapException));
         }
         
+        /// <summary>
+        /// Executes If on each element of the collection
+        /// </summary>
+        /// <param name="results">Input Async Result Collection</param>
+        /// <param name="function">The function to execute</param>
+        /// <typeparam name="TSucc">Input type</typeparam>
+        /// <returns>Collection after executing function on each element</returns>
+        public static IEnumerable<Result<TSucc>> IfEach<TSucc>(this IEnumerable<Result<TSucc>> results,
+            Func<TSucc, Result<bool>> function)
+            where TSucc: notnull
+        {
+            return results.Select(x => x.If(function));
+        }
+        
+        /// <summary>
+        /// Executes If on each element of the collection
+        /// </summary>
+        /// <param name="results">Input Async Result Collection</param>
+        /// <param name="function">The function to execute</param>
+        /// <param name="mapException">The mapping function for the error</param>
+        /// <typeparam name="TSucc">Input type</typeparam>
+        /// <returns>Collection after executing function on each element</returns>
+        public static IEnumerable<Result<TSucc>> IfEach<TSucc>(this IEnumerable<Result<TSucc>> results,
+            Func<TSucc, bool> function, Func<Exception, Exception> mapException)
+            where TSucc: notnull
+        {
+            return results.Select(x => x.If(function, mapException));
+        }
+
+        /// <summary>
+        /// Executes Match on each element of the collection
+        /// </summary>
+        /// <param name="results">Input Async Result Collection</param>
+        /// <param name="Success">The function to execute if Result is Success</param>
+        /// <param name="Failure">The function to execute if Result is Error</param>
+        /// <typeparam name="TSucc">Input type</typeparam>
+        /// <typeparam name="TResult">Return type</typeparam>
+        /// <returns>Collection after executing function on each element</returns>
         public static IEnumerable<TResult> MatchEach<TSucc, TResult>(this IEnumerable<Result<TSucc>> results,
             Func<TSucc, TResult> Success, Func<Exception, TResult> Failure)
         {
             return results.Select(x => x.Match(Success, Failure));
         }
         
-               
+        /// <summary>
+        /// Executes Match on each element of the collection
+        /// </summary>
+        /// <param name="results">Input Async Result Collection</param>
+        /// <param name="Success">The function to execute if Result is Success</param>
+        /// <param name="Failure">The function to execute if Result is Error</param>
+        /// <typeparam name="TSucc">Input type</typeparam>
+        /// <returns>Collection after executing function on each element</returns>
         public static void MatchEach<TSucc>(this IEnumerable<Result<TSucc>> results,
             Action<TSucc> Success, Action<Exception> Failure)
         {
