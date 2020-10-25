@@ -11,7 +11,8 @@
         <PackageProjectUrl>https://github.com/archery2000/CSharpResult</PackageProjectUrl>
         <RepositoryUrl>https://github.com/archery2000/CSharpResult.git</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
-        <Version>0.0.1</Version>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <Version>0.0.2</Version>
     </PropertyGroup>
 
 </Project>
