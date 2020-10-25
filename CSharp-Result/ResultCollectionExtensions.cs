@@ -12,7 +12,7 @@ namespace CSharp_Result
         /// <summary>
         /// Checks if all the results in the Collection are not Failures.
         /// </summary>
-        /// <param name="collection">Collection of results to check</param>
+        /// <param name="collection">Collection of Results to check</param>
         /// <typeparam name="T">Type contained in Success</typeparam>
         /// <returns>True if all results are not Failures</returns>
         public static bool AllSucceed<T>(this IEnumerable<Result<T>> collection) 
@@ -24,7 +24,7 @@ namespace CSharp_Result
         /// <summary>
         /// Checks if at least one result in the Collection is not a Failure
         /// </summary>
-        /// <param name="collection">Collection of results to check</param>
+        /// <param name="collection">Collection of Results to check</param>
         /// <typeparam name="T">Type contained in Success</typeparam>
         /// <returns>True if at least one result is not a Failure</returns>
         public static bool AnySucceed<T>(this IEnumerable<Result<T>> collection) 
@@ -36,7 +36,7 @@ namespace CSharp_Result
         /// <summary>
         /// Checks if all the results in the Collection are Failures.
         /// </summary>
-        /// <param name="collection">Collection of results to check</param>
+        /// <param name="collection">Collection of Results to check</param>
         /// <typeparam name="T">Type contained in Success</typeparam>
         /// <returns>True if all results are Failures</returns>
         public static bool AllFail<T>(this IEnumerable<Result<T>> collection) 
@@ -48,7 +48,7 @@ namespace CSharp_Result
         /// <summary>
         /// Checks if at least one result in the Collection is a Failure
         /// </summary>
-        /// <param name="collection">Collection of results to check</param>
+        /// <param name="collection">Collection of Results to check</param>
         /// <typeparam name="T">Type contained in Success</typeparam>
         /// <returns>True if at least one result is a Failure</returns>
         public static bool AnyFail<T>(this IEnumerable<Result<T>> collection) 
@@ -60,7 +60,7 @@ namespace CSharp_Result
         /// <summary>
         /// Gets all the Failures 
         /// </summary>
-        /// <param name="collection">Collection of results to filter</param>
+        /// <param name="collection">Collection of Results to filter</param>
         /// <typeparam name="T">Type contained in Success</typeparam>
         /// <returns>IEnumerable of all the Failures in the Collection</returns>
         public static IEnumerable<Exception> GetFailures<T>(this IEnumerable<Result<T>> collection) 
@@ -72,7 +72,7 @@ namespace CSharp_Result
         /// <summary>
         /// Gets all the Successes 
         /// </summary>
-        /// <param name="collection">Collection of results to filter</param>
+        /// <param name="collection">Collection of Results to filter</param>
         /// <typeparam name="T">Type contained in Success</typeparam>
         /// <returns>IEnumerable of all the Successes in the Collection</returns>
         public static IEnumerable<T> GetSuccesses<T>(this IEnumerable<Result<T>> collection) 
@@ -84,7 +84,7 @@ namespace CSharp_Result
         /// <summary>
         /// Converts a Sequence of Results into a Result of Sequence.
         /// </summary>
-        /// <param name="collection">Collection of results to filter</param>
+        /// <param name="collection">Collection of Results to filter</param>
         /// <typeparam name="T"></typeparam>
         /// <returns>A Result of a sequence</returns>
         public static Result<IEnumerable<T>> ToResultOfSeq<T>(this IEnumerable<Result<T>> collection) 
@@ -280,7 +280,7 @@ namespace CSharp_Result
         /// </summary>
         /// <param name="collection">collection to convert</param>
         /// <typeparam name="T">type contained in collection</typeparam>
-        /// <returns>Collection of results</returns>
+        /// <returns>Collection of Results</returns>
         public static IEnumerable<Result<T>> ToResultCollection<T>(this IEnumerable<T> collection)
         {
             return collection.Select(x => x.ToResult());

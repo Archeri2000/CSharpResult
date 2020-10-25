@@ -8,23 +8,148 @@ namespace CSharp_Result
 {
     public static class AsyncResultCollectionExtensions()
     {
+        /// <summary>
+        /// Checks if all the results in the Collection are not Failures.
+        /// </summary>
+        /// <param name="collection">Collection of Async Results to check</param>
+        /// <typeparam name="T">Type contained in Success</typeparam>
+        /// <returns>True if all results are not Failures</returns>
+        public static async Task<bool> AllSucceed<T>(this IEnumerable<Task<Result<T>>> collection) 
+            where T : notnull
+        {
+           await foreach (var result in collection.ToIAsyncEnumerable())
+           {
+              if (result.IsFailure())
+              {
+                 return false;
+              }
+           }
+           return true;
+        }
+        
+        /// <summary>
+        /// Checks if at least one result in the Collection is not a Failure
+        /// </summary>
+        /// <param name="collection">Collection of Async Results to check</param>
+        /// <typeparam name="T">Type contained in Success</typeparam>
+        /// <returns>True if at least one result is not a Failure</returns>
+        public static async Task<bool> AnySucceed<T>(this IEnumerable<Task<Result<T>>> collection) 
+            where T : notnull
+        {
+           await foreach (var result in collection.ToIAsyncEnumerable())
+           {
+              if (result.IsSuccess())
+              {
+                 return true;
+              }
+           }
+           return false;           
+        }
+        
+        /// <summary>
+        /// Checks if all the results in the Collection are Failures.
+        /// </summary>
+        /// <param name="collection">Collection of Async Results to check</param>
+        /// <typeparam name="T">Type contained in Success</typeparam>
+        /// <returns>True if all results are Failures</returns>
+        public static async Task<bool> AllFail<T>(this IEnumerable<Task<Result<T>>> collection) 
+            where T : notnull
+        {
+           await foreach (var result in collection.ToIAsyncEnumerable())
+           {
+              if (result.IsSuccess())
+              {
+                 return false;
+              }
+           }
+           return true;        
+        }
+        
+        /// <summary>
+        /// Checks if at least one result in the Collection is a Failure
+        /// </summary>
+        /// <param name="collection">Collection of Async Results to check</param>
+        /// <typeparam name="T">Type contained in Success</typeparam>
+        /// <returns>True if at least one result is a Failure</returns>
+        public static async Task<bool> AnyFail<T>(this IEnumerable<Task<Result<T>>> collection) 
+            where T : notnull
+        {
+           await foreach (var result in collection.ToIAsyncEnumerable())
+           {
+              if (result.IsFailure())
+              {
+                 return true;
+              }
+           }
+            return false;
+        }
+
+        /// <summary>
+        /// Gets all the Failures 
+        /// </summary>
+        /// <param name="collection">Collection of Async Results to filter</param>
+        /// <typeparam name="T">Type contained in Success</typeparam>
+        /// <returns>IEnumerable of all the Failures in the Collection</returns>
+        public static async IAsyncEnumerable<Exception> GetFailures<T>(this IEnumerable<Task<Result<T>>> collection) 
+            where T : notnull
+        {
+           await foreach (var result in collection.ToIAsyncEnumerable())
+           {
+              if (result.IsFailure())
+              {
+                 yield return result.FailureOrDefault();
+              }
+           }
+        }
+        
+        /// <summary>
+        /// Gets all the Successes 
+        /// </summary>
+        /// <param name="collection">Collection of Async Results to filter</param>
+        /// <typeparam name="T">Type contained in Success</typeparam>
+        /// <returns>IEnumerable of all the Successes in the Collection</returns>
+        public static async IAsyncEnumerable<T> GetSuccesses<T>(this IEnumerable<Task<Result<T>>> collection) 
+            where T : notnull
+        {
+           await foreach (var result in collection.ToIAsyncEnumerable())
+           {
+              if (result.IsSuccess())
+              {
+                 yield return result.SuccessOrDefault();
+              }
+           }        
+        }
+
        /// <summary>
-       /// 
+       /// Awaits all the Async Results in the collection
        /// </summary>
-       /// <param name="results"></param>
-       /// <typeparam name="TSucc"></typeparam>
-       /// <returns></returns>
+       /// <param name="results">Collection of Async Results</param>
+       /// <typeparam name="TSucc">Type of Result</typeparam>
+       /// <returns>A Task returning a Collection of Async Results</returns>
         public static async Task<IEnumerable<Result<TSucc>>> AwaitAll<TSucc>(this IEnumerable<Task<Result<TSucc>>> results)
         {
            var awaited = await Task.WhenAll(results.ToList());
            return awaited.AsEnumerable();
         }
         
+       /// <summary>
+       /// Awaits any Async Result from a collection
+       /// </summary>
+       /// <param name="results">Collection of Async Results</param>
+       /// <typeparam name="TSucc">Type of Result</typeparam>
+       /// <returns>A Task returning a Result</returns>
         public static async Task<Result<TSucc>> AwaitAny<TSucc>(this IEnumerable<Task<Result<TSucc>>> results)
         {
            return (await Task.WhenAny(results)).Result;
         }
 
+       
+       /// <summary>
+       /// Converts a collection of Async Results to an Async Enumerable of Results
+       /// </summary>
+       /// <param name="results">Collection of Async Results</param>
+       /// <typeparam name="TSucc">Type of Result</typeparam>
+       /// <returns>An async enumerable of Results</returns>
         public static async IAsyncEnumerable<Result<TSucc>> ToIAsyncEnumerable<TSucc>(
            this IEnumerable<Task<Result<TSucc>>> results)
         {
