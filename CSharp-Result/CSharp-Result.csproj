@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <OutputType>Class Library</OutputType>
+        <OutputType>Library</OutputType>
         <TargetFramework>netcoreapp3.0</TargetFramework>
         <RootNamespace>CSharp_Result</RootNamespace>
         <LangVersion>9.0</LangVersion>
