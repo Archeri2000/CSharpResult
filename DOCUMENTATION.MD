@@ -305,3 +305,63 @@ var result =
 ```
 
 ## Async Results and Collections
+Support also exists for managing a collection of Async Results.
+
+A collection of async results can be created as follows:
+```c#
+// Create from collection
+var ints = new List<int>();
+var results = ints.ToAsyncResultCollection();
+
+// Create from Result collection
+var res = new List<Result<int>>();
+var results = res.ToAsyncResultCollection();
+```
+The workflow when managing a collection of async results is to use the chaining functions **Then**, **Do** and **If** to describe the async workflow, 
+then call one of the functions (e.g. **AwaitAll**, **AwaitAny**) to begin the async execution.
+
+Similar to managing collections of results, the **Each** keyword is used to signify operating on a collection.
+When an async operation needs to be executed, the **Await** keyword is used.
+```c#
+var results = models.ToAsyncResultCollection()
+                    .ThenEach(...)
+                    .IfAwaitEach(...)
+                    .ThenAwaitEach(...)
+                    .DoEach(...);
+```
+
+### Querying collection state and IAsyncEnumerable support
+Similar to the Result collection, it is possible to query the state of the collection.
+```c#
+var results = models.ToAsyncResultCollection()...;
+
+results.AnySucceed();
+results.AnyFail();
+results.AllSucceed();
+results.AllFail();
+```
+
+Support also exists for processing these Async Results.
+```c#
+var results = models.ToAsyncResultCollection()...;
+
+// await all the Async Results to return
+await results.AwaitAll();
+// await any Async Result to return
+await results.AwaitAny();
+```
+
+It is also possible to turn the collection into an IAsyncEnumerable for processing.
+```c#
+var results = models.ToAsyncResultCollection()...;
+
+// get only successes as IAsyncEnumerable
+var successes = results.GetSuccesses();
+// get only failures as IAsyncEnumerable
+var failures = results.GetFailures();
+// get all results as IAsyncEnumerable
+var res = results.ToIAsyncEnumerable();
+```
+
+### Query Expressions
+For the same reasons as Result Collections, Query Expression support is not extended to Async Result Collections.
