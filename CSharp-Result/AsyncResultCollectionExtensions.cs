@@ -1,12 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace CSharp_Result
 {
-    public static class AsyncResultCollectionExtensions()
+    public static class AsyncResultCollectionExtensions
     {
         /// <summary>
         /// Checks if all the results in the Collection are not Failures.
