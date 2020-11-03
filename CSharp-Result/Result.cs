@@ -106,7 +106,7 @@ namespace CSharp_Result
         /// Returns the result of the computation.
         /// </summary>
         /// <param name="function">The function to execute</param>
-        /// <typeparam name="TResult">The type of the result of the computation (unused)</typeparam>
+        /// <typeparam name="TResult">The type of the result of the computation</typeparam>
         /// <returns>Either a Success from the computation, or a Failure</returns>
         public Result<TResult> Then<TResult>(Func<TSucc, Result<TResult>> function) where TResult : notnull
         {
@@ -122,7 +122,7 @@ namespace CSharp_Result
         /// </summary>
         /// <param name="function">The function to execute</param>
         /// <param name="mapException">The mapping function for the error</param>
-        /// <typeparam name="TResult">The type of the result of the computation (unused)</typeparam>
+        /// <typeparam name="TResult">The type of the result of the computation</typeparam>
         /// <returns>Either a Success from the computation, or a Failure</returns>
         public Result<TResult> Then<TResult>(Func<TSucc, TResult> function, Func<Exception, Exception> mapException) where TResult : notnull
         {
