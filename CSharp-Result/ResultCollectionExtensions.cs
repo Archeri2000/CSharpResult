@@ -172,7 +172,7 @@ namespace CSharp_Result
         /// <param name="results">Input Async Result Collection</param>
         /// <param name="function">The function to execute</param>
         /// <typeparam name="TSucc">Input type</typeparam>
-        /// <typeparam name="TResult">The type of the result of the computation (unused)</typeparam>
+        /// <typeparam name="TResult">The type of the result of the computation</typeparam>
         /// <returns>Collection after executing function on each element</returns>
         public static IEnumerable<Result<TResult>> ThenEach<TSucc, TResult>(this IEnumerable<Result<TSucc>> results,
             Func<TSucc, Result<TResult>> function)
@@ -189,7 +189,7 @@ namespace CSharp_Result
         /// <param name="function">The function to execute</param>
         /// <param name="mapException">The mapping function for the error</param>
         /// <typeparam name="TSucc">Input type</typeparam>
-        /// <typeparam name="TResult">The type of the result of the computation (unused)</typeparam>
+        /// <typeparam name="TResult">The type of the result of the computation</typeparam>
         /// <returns>Collection after executing function on each element</returns>
         public static IEnumerable<Result<TResult>> ThenEach<TSucc, TResult>(this IEnumerable<Result<TSucc>> results,
             Func<TSucc, TResult> function, Func<Exception, Exception> mapException)
