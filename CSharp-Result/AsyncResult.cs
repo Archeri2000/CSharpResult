@@ -3,6 +3,9 @@ using System.Threading.Tasks;
 
 namespace CSharp_Result
 {
+   /// <summary>
+   /// Static class with extension methods to support Async Result processing
+   /// </summary>
    public static class AsyncResult 
    {
       /// <summary>
@@ -88,7 +91,59 @@ namespace CSharp_Result
             Failure: x => x
          );
       }
+      
+      /// <summary>
+      /// Checks if Async Result is a Failure
+      /// </summary>
+      /// <returns>True if Async Result is a Failure</returns>
+      public static Task<bool> IsFailure<TSucc>(this Task<Result<TSucc>> result)
+         where TSucc : notnull
+      {
+         return result.Match(Success:s => false, Failure: e => true);
+      }
+        
+      /// <summary>
+      /// Checks if Async Result contains a Success
+      /// </summary>
+      /// <returns>True if Async Result is contains a Success</returns>
+      public static async Task<bool> IsSuccess<TSucc>(this Task<Result<TSucc>> result)
+         where TSucc : notnull
+      {
+         return !await result.IsFailure();
+      }
+
+
+      /// <summary>
+      /// Unwraps and returns the Success if it exists, otherwise returns a default value
+      /// </summary>
+      /// <param name="defaultImpl">Optional default value to return</param>
+      /// <returns>Success or default value</returns>
+      public static Task<TSucc> SuccessOrDefault<TSucc>(this Task<Result<TSucc>> result, TSucc defaultImpl = default)
+         where TSucc : notnull
+      {
+         return result.Match(
+            Success: s => s,
+            Failure: e => defaultImpl
+         );
+      }
+
+      /// <summary>
+      /// Unwraps and returns the Failure if it exists, otherwise returns a default value
+      /// </summary>
+      /// <param name="defaultImpl">Optional default value to return</param>
+      /// <returns>Failure or default value</returns>
+      public static Task<Exception> FailureOrDefault<TSucc>(this Task<Result<TSucc>> result, Exception defaultImpl = default)
+         where TSucc : notnull
+      {
+         return result.Match(
+            Success: s => defaultImpl,
+            Failure: e => e
+         );
+      }
    }
+   /// <summary>
+   /// Static class for extensions methods manipulating Async Results
+   /// </summary>
    public static class AsyncResultExtensions
    {
       /// <summary>
