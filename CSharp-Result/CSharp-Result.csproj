@@ -12,7 +12,7 @@
         <RepositoryUrl>https://github.com/archery2000/CSharpResult.git</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <Version>0.0.3</Version>
+        <Version>0.0.4</Version>
     </PropertyGroup>
 
 </Project>

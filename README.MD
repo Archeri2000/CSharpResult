@@ -2,18 +2,18 @@
 
 A C# Result Type to facilitate Railway Oriented Programming.
 
-Latest Version: 0.0.3
+Latest Version: 0.0.4
 
 # Getting Started
 
 Install via Nuget
 ```bash
-$ dotnet add package CSharp-Result --version 0.0.3
+$ dotnet add package CSharp-Result --version 0.0.4
 ```
 
 Install via Package Manager
 ```bash
-Install-Package CSharp-Result -Version 0.0.3
+Install-Package CSharp-Result -Version 0.0.4
 ```
 
 # Usage
@@ -35,6 +35,7 @@ We use [SemVer](https://semver.org/) for versioning. For the versions available,
 ## Changelog
 | Version | Changes |
 |---|---|
+|0.0.4|Override .Equals and .GetHashCode to compare wrapped types.
 |0.0.3|Add Get function to all Result Types.
 |0.0.2|Added Documentation to Nuget Package.
 |0.0.1|Initial Release.
