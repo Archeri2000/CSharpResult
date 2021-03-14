@@ -12,7 +12,31 @@ namespace CSharp_Result
     {
         public static implicit operator Result<TSucc>(TSucc val) => new Success<TSucc>(val);
         public static implicit operator Result<TSucc>(Exception err) => new Failure<TSucc>(err);
-        
+
+        /// <summary>
+        /// When comparing two Results, unwrap and compare them by the inner wrapped values.
+        /// </summary>
+        /// <param name="obj">Other object to compare to</param>
+        /// <returns>true if the inner wrapped values are equal</returns>
+        public override bool Equals(object? obj)
+        {
+            if (obj is not Result<TSucc>) return false;
+            
+            var other = (Result<TSucc>) obj;
+            return Match(
+                x => other.Match(y => x.Equals(y), _ => false),
+                x => other.Match(_ => false, y => x.Equals(y)));
+        }
+
+        /// <summary>
+        /// Overriding get hash code to determine the hash code based on the contents of the Result.
+        /// </summary>
+        /// <returns>Hash code of the contents of the Result</returns>
+        public override int GetHashCode()
+        {
+            return Match(x => x.GetHashCode(), x => x.GetHashCode());
+        }
+
         /// <summary>
         /// Checks if Result is a Failure
         /// </summary>
