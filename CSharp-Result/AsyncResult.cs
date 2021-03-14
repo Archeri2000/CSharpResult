@@ -111,6 +111,20 @@ namespace CSharp_Result
       {
          return !await result.IsFailure();
       }
+      
+      
+      /// <summary>
+      /// Returns the contents of the Async Result if successful, or throws the exception if it failed.
+      /// </summary>
+      /// <returns></returns>
+      public static Task<TSucc> Get<TSucc>(this Task<Result<TSucc>> result)
+         where TSucc : notnull
+      {
+         return result.Match(
+            x => x,
+            err => throw err
+         );
+      }
 
 
       /// <summary>
