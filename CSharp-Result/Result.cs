@@ -32,6 +32,18 @@ namespace CSharp_Result
         }
 
         /// <summary>
+        /// Returns the contents of the Result if successful, or throws the exception if it failed.
+        /// </summary>
+        /// <returns></returns>
+        public TSucc Get()
+        {
+            return Match(
+                x => x,
+                err => throw err
+            );
+        }
+
+        /// <summary>
         /// Unwraps and returns the Success if it exists, otherwise returns a default value
         /// </summary>
         /// <param name="defaultImpl">Optional default value to return</param>

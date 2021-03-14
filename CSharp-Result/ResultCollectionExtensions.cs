@@ -58,6 +58,25 @@ namespace CSharp_Result
         }
 
         /// <summary>
+        /// Returns all the contents of the underlying Results if all elements succeed, otherwise throw an aggregate exception with all failures
+        /// </summary>
+        /// <param name="collection">The collection to parse</param>
+        /// <typeparam name="TSucc">The type of the success wrapped</typeparam>
+        /// <returns>The collection of successes if they all succeed</returns>
+        /// <exception cref="AggregateException">The collection of exceptions if any fail</exception>
+        public static IEnumerable<TSucc> Get<TSucc>(this IEnumerable<Result<TSucc>> collection)
+            where TSucc : notnull
+        {
+            var enumerable = collection.ToList();
+            var failures = enumerable.GetFailures().ToList();
+            if (failures.Any())
+            {
+                throw new AggregateException(failures);
+            }
+            return enumerable.GetSuccesses();
+        }
+
+        /// <summary>
         /// Gets all the Failures 
         /// </summary>
         /// <param name="collection">Collection of Results to filter</param>
