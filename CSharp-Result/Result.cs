@@ -55,6 +55,30 @@ namespace CSharp_Result
         {
             return !IsFailure();
         }
+        
+        /// <summary>
+        /// Checks if Result is a Failure, returning the failure in the out parameter
+        /// </summary>
+        /// <param name="error">out parameter to hold the error value</param>
+        /// <returns>True if Result is a Failure</returns>
+        public bool IsFailure(out Exception error)
+        {
+            bool ret;
+            (error, ret) = this.Match(Success:_ => (null, false), Failure: e => (e, true));
+            return ret;
+        }
+        
+        /// <summary>
+        /// Checks if Result contains a Success, returning the success in the out parameter
+        /// </summary>
+        /// <param name="success">out parameter to hold the success value</param>
+        /// <returns>True if Result is contains a Success</returns>
+        public bool IsSuccess(out TSucc success)
+        {
+            bool ret;
+            (success, ret) = this.Match(Success: s => (s, true), Failure: _ => (default, false));
+            return ret;
+        }
 
         /// <summary>
         /// Returns the contents of the Result if successful, or throws the exception if it failed.
