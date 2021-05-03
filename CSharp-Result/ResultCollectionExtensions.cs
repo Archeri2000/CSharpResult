@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static CSharp_Result.Errors;
 
 namespace CSharp_Result
 {
@@ -164,7 +165,7 @@ namespace CSharp_Result
         /// <typeparam name="TResult">The type of the result of the computation (unused)</typeparam>
         /// <returns>Collection after executing function on each element</returns>
         public static IEnumerable<Result<TSucc>> DoEach<TSucc, TResult>(this IEnumerable<Result<TSucc>> results,
-            Func<TSucc, TResult> function, Func<Exception, Exception> mapException)
+            Func<TSucc, TResult> function, ExceptionFilter mapException)
             where TSucc: notnull
         {
             return results.Select(x => x.Do(function, mapException));
@@ -179,7 +180,7 @@ namespace CSharp_Result
         /// <typeparam name="TSucc">Input type</typeparam>
         /// <returns>Collection after executing function on each element</returns>
         public static IEnumerable<Result<TSucc>> DoEach<TSucc>(this IEnumerable<Result<TSucc>> results,
-            Action<TSucc> function, Func<Exception, Exception> mapException)
+            Action<TSucc> function, ExceptionFilter mapException)
             where TSucc: notnull
         {
             return results.Select(x => x.Do(function, mapException));
@@ -211,7 +212,7 @@ namespace CSharp_Result
         /// <typeparam name="TResult">The type of the result of the computation</typeparam>
         /// <returns>Collection after executing function on each element</returns>
         public static IEnumerable<Result<TResult>> ThenEach<TSucc, TResult>(this IEnumerable<Result<TSucc>> results,
-            Func<TSucc, TResult> function, Func<Exception, Exception> mapException)
+            Func<TSucc, TResult> function, ExceptionFilter mapException)
             where TSucc: notnull
             where TResult: notnull
         {
@@ -227,7 +228,7 @@ namespace CSharp_Result
         /// <typeparam name="TSucc">Input type</typeparam>
         /// <returns>Collection after executing function on each element</returns>
         public static IEnumerable<Result<Unit>> ThenEach<TSucc>(this IEnumerable<Result<TSucc>> results,
-            Action<TSucc> function, Func<Exception, Exception> mapException)
+            Action<TSucc> function, ExceptionFilter mapException)
             where TSucc: notnull
         {
             return results.Select(x => x.Then(function, mapException));
@@ -256,7 +257,7 @@ namespace CSharp_Result
         /// <typeparam name="TSucc">Input type</typeparam>
         /// <returns>Collection after executing function on each element</returns>
         public static IEnumerable<Result<TSucc>> IfEach<TSucc>(this IEnumerable<Result<TSucc>> results,
-            Func<TSucc, bool> function, Func<Exception, Exception> mapException)
+            Func<TSucc, bool> function, ExceptionFilter mapException)
             where TSucc: notnull
         {
             return results.Select(x => x.If(function, mapException));

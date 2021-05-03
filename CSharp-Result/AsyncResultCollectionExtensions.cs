@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using static CSharp_Result.Errors;
 
 namespace CSharp_Result
 {
@@ -213,7 +214,7 @@ namespace CSharp_Result
       /// <typeparam name="TSucc">Input type</typeparam>
       /// <typeparam name="TResult">The type of the result of the computation (unused)</typeparam>
       /// <returns>Collection after executing function on each element</returns>
-      public static IEnumerable<Task<Result<TSucc>>> DoAwaitEach<TSucc, TResult>(this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc, Task<TResult>> function, Func<Exception, Exception> mapException) 
+      public static IEnumerable<Task<Result<TSucc>>> DoAwaitEach<TSucc, TResult>(this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc, Task<TResult>> function, ExceptionFilter mapException) 
          where TSucc : notnull
          where TResult : notnull
       {
@@ -228,7 +229,7 @@ namespace CSharp_Result
       /// <param name="mapException">The mapping function for the error</param>
       /// <typeparam name="TSucc">Input type</typeparam>
       /// <returns>Collection after executing function on each element</returns>
-      public static IEnumerable<Task<Result<TSucc>>> DoAwaitEach<TSucc>(this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc, Task> function, Func<Exception, Exception> mapException) 
+      public static IEnumerable<Task<Result<TSucc>>> DoAwaitEach<TSucc>(this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc, Task> function, ExceptionFilter mapException) 
          where TSucc : notnull
       {
          return results.DoAwaitEach(function.ToAsyncResultFunc(mapException));
@@ -257,7 +258,7 @@ namespace CSharp_Result
       /// <typeparam name="TSucc">Input type</typeparam>
       /// <typeparam name="TResult">The type of the result of the computation (unused)</typeparam>
       /// <returns>Collection after executing function on each element</returns>
-      public static IEnumerable<Task<Result<TSucc>>> DoEach<TSucc, TResult>(this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc, TResult> function, Func<Exception, Exception> mapException) 
+      public static IEnumerable<Task<Result<TSucc>>> DoEach<TSucc, TResult>(this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc, TResult> function, ExceptionFilter mapException) 
          where TSucc : notnull
       {
          return results.DoEach(function.ToResultFunc(mapException));
@@ -271,7 +272,7 @@ namespace CSharp_Result
       /// <param name="mapException">The mapping function for the error</param>
       /// <typeparam name="TSucc">Input type</typeparam>
       /// <returns>Collection after executing function on each element</returns>
-      public static IEnumerable<Task<Result<TSucc>>> DoEach<TSucc>(this IEnumerable<Task<Result<TSucc>>> results, Action<TSucc> function, Func<Exception, Exception> mapException) 
+      public static IEnumerable<Task<Result<TSucc>>> DoEach<TSucc>(this IEnumerable<Task<Result<TSucc>>> results, Action<TSucc> function, ExceptionFilter mapException) 
          where TSucc : notnull
       {
          return results.DoEach(function.ToResultFunc(mapException));
@@ -300,7 +301,7 @@ namespace CSharp_Result
       /// <typeparam name="TSucc">Input type</typeparam>
       /// <typeparam name="TResult">The type of the result of the computation</typeparam>
       /// <returns>Collection after executing function on each element</returns>
-      public static IEnumerable<Task<Result<TResult>>> ThenAwaitEach<TSucc, TResult>(this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc, Task<TResult>> function, Func<Exception, Exception> mapException) 
+      public static IEnumerable<Task<Result<TResult>>> ThenAwaitEach<TSucc, TResult>(this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc, Task<TResult>> function, ExceptionFilter mapException) 
          where TSucc : notnull
          where TResult : notnull
       {
@@ -315,7 +316,7 @@ namespace CSharp_Result
       /// <param name="mapException">The mapping function for the error</param>
       /// <typeparam name="TSucc">Input type</typeparam>
       /// <returns>Collection after executing function on each element</returns>
-      public static IEnumerable<Task<Result<Unit>>> ThenAwaitEach<TSucc>(this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc, Task> function, Func<Exception, Exception> mapException) 
+      public static IEnumerable<Task<Result<Unit>>> ThenAwaitEach<TSucc>(this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc, Task> function, ExceptionFilter mapException) 
          where TSucc : notnull
       {
          return results.ThenAwaitEach(function.ToAsyncResultFunc(mapException));
@@ -345,7 +346,7 @@ namespace CSharp_Result
       /// <typeparam name="TSucc">Input type</typeparam>
       /// <typeparam name="TResult">The type of the result of the computation</typeparam>
       /// <returns>Collection after executing function on each element</returns>
-      public static IEnumerable<Task<Result<TResult>>> ThenEach<TSucc, TResult>(this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc, TResult> function, Func<Exception, Exception> mapException) 
+      public static IEnumerable<Task<Result<TResult>>> ThenEach<TSucc, TResult>(this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc, TResult> function, ExceptionFilter mapException) 
          where TSucc : notnull
          where TResult : notnull
       {
@@ -360,7 +361,7 @@ namespace CSharp_Result
       /// <param name="mapException">The mapping function for the error</param>
       /// <typeparam name="TSucc">Input type</typeparam>
       /// <returns>Collection after executing function on each element</returns>
-      public static IEnumerable<Task<Result<Unit>>> ThenEach<TSucc>(this IEnumerable<Task<Result<TSucc>>> results, Action<TSucc> function, Func<Exception, Exception> mapException) 
+      public static IEnumerable<Task<Result<Unit>>> ThenEach<TSucc>(this IEnumerable<Task<Result<TSucc>>> results, Action<TSucc> function, ExceptionFilter mapException) 
          where TSucc : notnull
       {
          return results.ThenEach(function.ToResultFunc(mapException));
@@ -388,7 +389,7 @@ namespace CSharp_Result
       /// <param name="mapException">The mapping function for the error</param>
       /// <typeparam name="TSucc">Input type</typeparam>
       /// <returns>Collection after executing function on each element</returns>
-      public static IEnumerable<Task<Result<TSucc>>> IfAwaitEach<TSucc>(this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc, Task<bool>> function, Func<Exception, Exception> mapException) 
+      public static IEnumerable<Task<Result<TSucc>>> IfAwaitEach<TSucc>(this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc, Task<bool>> function, ExceptionFilter mapException) 
          where TSucc : notnull
       {
          return results.IfAwaitEach(function.ToAsyncResultFunc(mapException));
@@ -415,7 +416,7 @@ namespace CSharp_Result
       /// <param name="mapException">The mapping function for the error</param>
       /// <typeparam name="TSucc">Input type</typeparam>
       /// <returns>Collection after executing function on each element</returns>
-      public static IEnumerable<Task<Result<TSucc>>> If<TSucc>(this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc, bool> function, Func<Exception, Exception> mapException) 
+      public static IEnumerable<Task<Result<TSucc>>> If<TSucc>(this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc, bool> function, ExceptionFilter mapException) 
          where TSucc : notnull
       {
          return results.If(function.ToResultFunc(mapException));

@@ -1,4 +1,5 @@
 ﻿using System;
+using static CSharp_Result.Errors;
 
 namespace CSharp_Result
 {
@@ -120,7 +121,7 @@ namespace CSharp_Result
         /// <param name="mapException">The mapping function for the error</param>
         /// <typeparam name="TResult">The type of the result of the computation (unused)</typeparam>
         /// <returns>Either the Success, or a Failure</returns>
-        public Result<TSucc> Do<TResult>(Func<TSucc,TResult> function, Func<Exception, Exception> mapException)
+        public Result<TSucc> Do<TResult>(Func<TSucc,TResult> function, ExceptionFilter mapException)
         {
             return Do(function.ToResultFunc(mapException));
         }
@@ -132,7 +133,7 @@ namespace CSharp_Result
         /// <param name="function">The function to execute</param>
         /// <param name="mapException">The mapping function for the error</param>
         /// <returns>Either the Success, or a Failure</returns>
-        public Result<TSucc> Do(Action<TSucc> function, Func<Exception, Exception> mapException)
+        public Result<TSucc> Do(Action<TSucc> function, ExceptionFilter mapException)
         {
             return Do(function.Unit(), mapException);
         }
@@ -160,7 +161,7 @@ namespace CSharp_Result
         /// <param name="mapException">The mapping function for the error</param>
         /// <typeparam name="TResult">The type of the result of the computation</typeparam>
         /// <returns>Either a Success from the computation, or a Failure</returns>
-        public Result<TResult> Then<TResult>(Func<TSucc, TResult> function, Func<Exception, Exception> mapException) where TResult : notnull
+        public Result<TResult> Then<TResult>(Func<TSucc, TResult> function, ExceptionFilter mapException) where TResult : notnull
         {
             return Then(function.ToResultFunc(mapException));
         }
@@ -172,7 +173,7 @@ namespace CSharp_Result
         /// <param name="function">The function to execute</param>
         /// <param name="mapException">The mapping function for the error</param>
         /// <returns>Either a Success containing Unit, or a Failure</returns>
-        public Result<Unit> Then(Action<TSucc> function, Func<Exception, Exception> mapException)
+        public Result<Unit> Then(Action<TSucc> function, ExceptionFilter mapException)
         {
             return Then(function.ToResultFunc(mapException));
         }
@@ -202,7 +203,7 @@ namespace CSharp_Result
         /// <param name="function">The function to execute</param>
         /// <param name="mapException">The mapping function for the error</param>
         /// <returns>Either the Success, or a Failure</returns>
-        public Result<TSucc> If(Func<TSucc,bool> function, Func<Exception, Exception> mapException)
+        public Result<TSucc> If(Func<TSucc,bool> function, ExceptionFilter mapException)
         {
             return If(function.ToResultFunc(mapException));
         }
@@ -320,7 +321,7 @@ namespace CSharp_Result
             return new Success<TSucc>(obj);
         }
 
-        public static Func<TInput, Result<TSucc>> ToResultFunc<TInput, TSucc>(this Func<TInput, TSucc> func, Func<Exception, Exception> mapException)
+        public static Func<TInput, Result<TSucc>> ToResultFunc<TInput, TSucc>(this Func<TInput, TSucc> func, ExceptionFilter mapException)
         {
             return (x =>
             {
@@ -331,7 +332,8 @@ namespace CSharp_Result
                 }
                 catch(Exception e)
                 {
-                    return mapException(e);
+                    if (!mapException(e)) throw;
+                    return e;
                 }
             });
         }
@@ -343,7 +345,7 @@ namespace CSharp_Result
         /// <param name="mapException">Exceptions to catch and map to Failure</param>
         /// <typeparam name="TInput">Input type</typeparam>
         /// <returns>Function that outputs a Success of Unit if successful, converting relevant Exceptions into Failure</returns>
-        public static Func<TInput, Result<Unit>> ToResultFunc<TInput>(this Action<TInput> func, Func<Exception, Exception> mapException)
+        public static Func<TInput, Result<Unit>> ToResultFunc<TInput>(this Action<TInput> func, ExceptionFilter mapException)
         {
             return ToResultFunc(func.Unit(), mapException);
         }

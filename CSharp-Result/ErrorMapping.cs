@@ -4,14 +4,25 @@ namespace CSharp_Result
 {
     public static class Errors
     {
-        public static Exception MapNone(Exception e)
+        public delegate bool ExceptionFilter(Exception e);
+        public static bool MapNone(Exception e)
         {
-            throw e;
+            return false;
         }
 
-        public static Exception MapAll(Exception e)
+        public static bool MapAll(Exception e)
         {
-            return e;
+            return true;
+        }
+
+        public static ExceptionFilter MapIfExceptionIs<T>()
+        {
+            return e => e is T;
+        }
+
+        public static ExceptionFilter Or<T>(this ExceptionFilter filter)
+        {
+            return e => filter(e) || e is T;
         }
     }
 }

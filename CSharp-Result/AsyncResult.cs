@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using static CSharp_Result.Errors;
 
 namespace CSharp_Result
 {
@@ -39,7 +40,7 @@ namespace CSharp_Result
       /// <typeparam name="TInput">Input type</typeparam>
       /// <typeparam name="TSucc">Output type</typeparam>
       /// <returns>Async Function that outputs a Success if successful, converting relevant Exceptions into Failure</returns>
-      public static Func<TInput, Task<Result<TSucc>>> ToAsyncResultFunc<TInput, TSucc>(this Func<TInput, Task<TSucc>> func, Func<Exception, Exception> mapException) 
+      public static Func<TInput, Task<Result<TSucc>>> ToAsyncResultFunc<TInput, TSucc>(this Func<TInput, Task<TSucc>> func, ExceptionFilter mapException) 
          where TSucc : notnull
       {
          return (async x =>
@@ -50,7 +51,8 @@ namespace CSharp_Result
             }
             catch(Exception e)
             {
-               return mapException(e);
+               if (!mapException(e)) throw;
+               return e;
             }
          });
       }
@@ -62,7 +64,7 @@ namespace CSharp_Result
       /// <param name="mapException">Exceptions to catch and map to Failure</param>
       /// <typeparam name="TInput">Input type</typeparam>
       /// <returns>Async Function that outputs a Success of Unit if successful, converting relevant Exceptions into Failure</returns>
-      public static Func<TInput, Task<Result<Unit>>> ToAsyncResultFunc<TInput>(this Func<TInput, Task> func, Func<Exception, Exception> mapException) 
+      public static Func<TInput, Task<Result<Unit>>> ToAsyncResultFunc<TInput>(this Func<TInput, Task> func, ExceptionFilter mapException) 
       {
          return (async x =>
          {
@@ -73,7 +75,8 @@ namespace CSharp_Result
             }
             catch(Exception e)
             {
-               return mapException(e);
+               if (!mapException(e)) throw;
+               return e;
             }
          });
       }
@@ -264,7 +267,7 @@ namespace CSharp_Result
          return res.MatchAwait(
             Success: s =>
             {
-               return function(s).Then(x => s, Errors.MapNone);
+               return function(s).Then(x => s, MapNone);
             },
             Failure: e => Task.FromResult((Result<TSucc>)e)
          );
@@ -280,7 +283,7 @@ namespace CSharp_Result
       /// <typeparam name="TSucc">Input type</typeparam>
       /// <typeparam name="TResult">The type of the result of the computation (unused)</typeparam>
       /// <returns>Async of either the Success, or a Failure</returns>
-      public static Task<Result<TSucc>> DoAwait<TSucc, TResult>(this Task<Result<TSucc>> res, Func<TSucc, Task<TResult>> function, Func<Exception, Exception> mapException) 
+      public static Task<Result<TSucc>> DoAwait<TSucc, TResult>(this Task<Result<TSucc>> res, Func<TSucc, Task<TResult>> function, ExceptionFilter mapException) 
          where TSucc : notnull
          where TResult : notnull
       {
@@ -296,7 +299,7 @@ namespace CSharp_Result
       /// <param name="mapException">The mapping function for the error</param>
       /// <typeparam name="TSucc">Input type</typeparam>
       /// <returns>Async of either a Success of Unit, or a Failure</returns>
-      public static Task<Result<TSucc>> DoAwait<TSucc>(this Task<Result<TSucc>> res, Func<TSucc, Task> function, Func<Exception, Exception> mapException) 
+      public static Task<Result<TSucc>> DoAwait<TSucc>(this Task<Result<TSucc>> res, Func<TSucc, Task> function, ExceptionFilter mapException) 
          where TSucc : notnull
       {
          return res.DoAwait(function.ToAsyncResultFunc(mapException));
@@ -327,7 +330,7 @@ namespace CSharp_Result
       /// <typeparam name="TSucc">Input type</typeparam>
       /// <typeparam name="TResult">The type of the result of the computation (unused)</typeparam>
       /// <returns>Async of either the Success, or a Failure</returns>
-      public static Task<Result<TSucc>> Do<TSucc, TResult>(this Task<Result<TSucc>> res, Func<TSucc, TResult> function, Func<Exception, Exception> mapException) 
+      public static Task<Result<TSucc>> Do<TSucc, TResult>(this Task<Result<TSucc>> res, Func<TSucc, TResult> function, ExceptionFilter mapException) 
          where TSucc : notnull
       {
          return res.Do(function.ToResultFunc(mapException));
@@ -342,7 +345,7 @@ namespace CSharp_Result
       /// <param name="mapException">The mapping function for the error</param>
       /// <typeparam name="TSucc">Input type</typeparam>
       /// <returns>Async of either a Success of Unit, or a Failure</returns>
-      public static Task<Result<TSucc>> Do<TSucc>(this Task<Result<TSucc>> res, Action<TSucc> function, Func<Exception, Exception> mapException) 
+      public static Task<Result<TSucc>> Do<TSucc>(this Task<Result<TSucc>> res, Action<TSucc> function, ExceptionFilter mapException) 
          where TSucc : notnull
       {
          return res.Do(function.ToResultFunc(mapException));
@@ -377,7 +380,7 @@ namespace CSharp_Result
       /// <typeparam name="TSucc">Input type</typeparam>
       /// <typeparam name="TResult">The type of the result of the computation</typeparam>
       /// <returns>Async of either a Success from the computation, or a Failure</returns>
-      public static Task<Result<TResult>> ThenAwait<TSucc, TResult>(this Task<Result<TSucc>> res, Func<TSucc, Task<TResult>> function, Func<Exception, Exception> mapException) 
+      public static Task<Result<TResult>> ThenAwait<TSucc, TResult>(this Task<Result<TSucc>> res, Func<TSucc, Task<TResult>> function, ExceptionFilter mapException) 
          where TSucc : notnull
          where TResult : notnull
       {
@@ -393,7 +396,7 @@ namespace CSharp_Result
       /// <param name="mapException">The mapping function for the error</param>
       /// <typeparam name="TSucc">Input type</typeparam>
       /// <returns>Async of either a Success containing Unit, or a Failure</returns>
-      public static Task<Result<Unit>> ThenAwait<TSucc>(this Task<Result<TSucc>> res, Func<TSucc, Task> function, Func<Exception, Exception> mapException) 
+      public static Task<Result<Unit>> ThenAwait<TSucc>(this Task<Result<TSucc>> res, Func<TSucc, Task> function, ExceptionFilter mapException) 
          where TSucc : notnull
       {
          return res.ThenAwait(function.ToAsyncResultFunc(mapException));
@@ -426,7 +429,7 @@ namespace CSharp_Result
       /// <typeparam name="TSucc">Input type</typeparam>
       /// <typeparam name="TResult">The type of the result of the computation</typeparam>
       /// <returns>Async of either a Success from the computation, or a Failure</returns>
-      public static Task<Result<TResult>> Then<TSucc, TResult>(this Task<Result<TSucc>> res, Func<TSucc, TResult> function, Func<Exception, Exception> mapException) 
+      public static Task<Result<TResult>> Then<TSucc, TResult>(this Task<Result<TSucc>> res, Func<TSucc, TResult> function, ExceptionFilter mapException) 
          where TSucc : notnull
          where TResult : notnull
       {
@@ -442,7 +445,7 @@ namespace CSharp_Result
       /// <param name="mapException">The mapping function for the error</param>
       /// <typeparam name="TSucc">Input type</typeparam>
       /// <returns>Async of either a Success containing Unit, or a Failure</returns>
-      public static Task<Result<Unit>> Then<TSucc>(this Task<Result<TSucc>> res, Action<TSucc> function, Func<Exception, Exception> mapException) 
+      public static Task<Result<Unit>> Then<TSucc>(this Task<Result<TSucc>> res, Action<TSucc> function, ExceptionFilter mapException) 
          where TSucc : notnull
       {
          return res.Then(function.ToResultFunc(mapException));
@@ -476,7 +479,7 @@ namespace CSharp_Result
       /// <param name="mapException">The mapping function for the error</param>
       /// <typeparam name="TSucc">Input type</typeparam>
       /// <returns>Async of either the Success, or a Failure</returns>
-      public static Task<Result<TSucc>> IfAwait<TSucc>(this Task<Result<TSucc>> res, Func<TSucc, Task<bool>> function, Func<Exception, Exception> mapException) 
+      public static Task<Result<TSucc>> IfAwait<TSucc>(this Task<Result<TSucc>> res, Func<TSucc, Task<bool>> function, ExceptionFilter mapException) 
          where TSucc : notnull
       {
          return res.IfAwait(function.ToAsyncResultFunc(mapException));
@@ -505,7 +508,7 @@ namespace CSharp_Result
       /// <param name="mapException">The mapping function for the error</param>
       /// <typeparam name="TSucc">Input type</typeparam>
       /// <returns>Async of either the Success, or a Failure</returns>
-      public static Task<Result<TSucc>> If<TSucc>(this Task<Result<TSucc>> res, Func<TSucc, bool> function, Func<Exception, Exception> mapException) 
+      public static Task<Result<TSucc>> If<TSucc>(this Task<Result<TSucc>> res, Func<TSucc, bool> function, ExceptionFilter mapException) 
          where TSucc : notnull
       {
          return res.If(function.ToResultFunc(mapException));
