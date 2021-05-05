@@ -452,66 +452,65 @@ namespace CSharp_Result
       }
       
       /// <summary>
-      /// If holding a Success, Executes the async function with the result as input. If result is false, returns Failure.
+      /// If holding a Success, checks if the result fulfils an async assertion. If not, returns an AssertionException as error
       /// </summary>
       /// <param name="res">Input Async Result</param>
-      /// <param name="function">The function to execute</param>
+      /// <param name="assertion">The assertion to execute</param>
       /// <typeparam name="TSucc">Input type</typeparam>
       /// <returns>Async of either the Success, or a Failure</returns>
-      public static Task<Result<TSucc>> IfAwait<TSucc>(this Task<Result<TSucc>> res, Func<TSucc, Task<Result<bool>>> function) 
+      public static Task<Result<TSucc>> AssertAwait<TSucc>(this Task<Result<TSucc>> res, Func<TSucc, Task<Result<bool>>> assertion) 
          where TSucc : notnull
       {
-         return res.MatchAwait(
-            Success: s =>
+         return res.ThenAwait(
+            async s =>
             {
-               return function(s).Then(x => x?(Result<TSucc>)s:(Result<TSucc>)new Exception("Predicate returned false!"));
-            },
-            Failure: e => Task.FromResult((Result<TSucc>)e)
+                 if(await assertion(s).IsSuccess()) return s;
+                 return (Result<TSucc>)new AssertionException("Assertion returned false!");
+            }
          );
       }
 
       /// <summary>
-      /// If holding a Success, Executes the async function with the result as input. If result is false, returns Failure.
+      /// If holding a Success, checks if the result fulfils an async assertion. If not, returns an AssertionException as error
       /// If any exception is thrown, it is mapped by the mapper function.
       /// </summary>
       /// <param name="res">Input Async Result</param>
-      /// <param name="function">The function to execute</param>
+      /// <param name="assertion">The assertion to execute</param>
       /// <param name="mapException">The mapping function for the error</param>
       /// <typeparam name="TSucc">Input type</typeparam>
       /// <returns>Async of either the Success, or a Failure</returns>
-      public static Task<Result<TSucc>> IfAwait<TSucc>(this Task<Result<TSucc>> res, Func<TSucc, Task<bool>> function, ExceptionFilter mapException) 
+      public static Task<Result<TSucc>> AssertAwait<TSucc>(this Task<Result<TSucc>> res, Func<TSucc, Task<bool>> assertion, ExceptionFilter mapException) 
          where TSucc : notnull
       {
-         return res.IfAwait(function.ToAsyncResultFunc(mapException));
+         return res.AssertAwait(assertion.ToAsyncResultFunc(mapException));
       }
 
       /// <summary>
-      /// If holding a Success, Executes the function with the result as input. If result is false, returns Failure.
+      /// If holding a Success, checks if the result fulfils an assertion. If not, returns an AssertionException as error
       /// </summary>
       /// <param name="res">Input Async Result</param>
-      /// <param name="function">The function to execute</param>
+      /// <param name="assertion">The assertion to execute</param>
       /// <typeparam name="TSucc">Input type</typeparam>
       /// <returns>Async of either the Success, or a Failure</returns>
-      public static async Task<Result<TSucc>> If<TSucc>(this Task<Result<TSucc>> res, Func<TSucc, Result<bool>> function) 
+      public static async Task<Result<TSucc>> Assert<TSucc>(this Task<Result<TSucc>> res, Func<TSucc, Result<bool>> assertion) 
          where TSucc : notnull
       {
-         var result = await res;
-         return result.If(function);
+         return (await res).Assert(assertion);
       }
 
       /// <summary>
-      /// If holding a Success, Executes the function with the result as input. If result is false, returns Failure.
+      /// If holding a Success, checks if the result fulfils an assertion. If not, returns an AssertionException as error
       /// If any exception is thrown, it is mapped by the mapper function.
       /// </summary>
       /// <param name="res">Input Async Result</param>
-      /// <param name="function">The function to execute</param>
+      /// <param name="assertion">The assertion to execute</param>
       /// <param name="mapException">The mapping function for the error</param>
       /// <typeparam name="TSucc">Input type</typeparam>
       /// <returns>Async of either the Success, or a Failure</returns>
-      public static Task<Result<TSucc>> If<TSucc>(this Task<Result<TSucc>> res, Func<TSucc, bool> function, ExceptionFilter mapException) 
+      public static Task<Result<TSucc>> Assert<TSucc>(this Task<Result<TSucc>> res, Func<TSucc, bool> assertion, ExceptionFilter mapException) 
          where TSucc : notnull
       {
-         return res.If(function.ToResultFunc(mapException));
+         return res.Assert(assertion.ToResultFunc(mapException));
       }
    }
 }

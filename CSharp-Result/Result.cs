@@ -126,14 +126,11 @@ namespace CSharp_Result
         /// <returns>Either the Success, or a Failure</returns>
         public Result<TSucc> Do<TResult>(Func<TSucc,Result<TResult>> function)
         {
-            return this.Match(
-                Success: s =>
+            return this.Then(
+                s =>
                 {
-                    return s.ToResult()
-                        .Then(function)
-                        .Then(x => (Result<TSucc>)s);
-                },
-                Failure: e => e
+                    return function(s).Then(_ => (Result<TSucc>)s);
+                }
             );
         }
         
@@ -203,33 +200,30 @@ namespace CSharp_Result
         }
         
         /// <summary>
-        /// If holding a Success, Executes the function with the result as input. If the function returns False, returns a failure.
+        /// If holding a Success, checks if the result fulfils an assertion. If not, returns an AssertionException as error
         /// </summary>
-        /// <param name="predicate">The function to execute</param>
+        /// <param name="assertion">The function to execute</param>
         /// <returns>Either the Success, or a Failure</returns>
-        public Result<TSucc> If(Func<TSucc,Result<bool>> predicate)
+        public Result<TSucc> Assert(Func<TSucc,Result<bool>> assertion)
         {
-            return this.Match(
-                Success: s =>
+            return this.Then(
+                s =>
                 {
-                    return s.ToResult()
-                        .Then(predicate)
-                        .Then(x => x?(Result<TSucc>)s:(Result<TSucc>)new Exception("Predicate returned false!"));
-                },
-                Failure: e => e
-            );
+                    if(assertion(s).IsSuccess()) return s;
+                    return (Result<TSucc>)new AssertionException("Assertion returned false!");
+                });
         }
         
         /// <summary>
-        /// If holding a Success, Executes the function with the result as input. If the function returns False, returns a failure.
+        /// If holding a Success, checks if the result fulfils an assertion. If not, returns an AssertionException as error
         /// If any exception is thrown, it is mapped by the mapper function.
         /// </summary>
-        /// <param name="function">The function to execute</param>
+        /// <param name="assertion">The assertion to execute</param>
         /// <param name="mapException">The mapping function for the error</param>
         /// <returns>Either the Success, or a Failure</returns>
-        public Result<TSucc> If(Func<TSucc,bool> function, ExceptionFilter mapException)
+        public Result<TSucc> Assert(Func<TSucc,bool> assertion, ExceptionFilter mapException)
         {
-            return If(function.ToResultFunc(mapException));
+            return Assert(assertion.ToResultFunc(mapException));
         }
 
         /// <summary>

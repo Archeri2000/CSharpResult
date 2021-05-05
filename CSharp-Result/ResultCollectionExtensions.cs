@@ -235,32 +235,32 @@ namespace CSharp_Result
         }
         
         /// <summary>
-        /// Executes If on each element of the collection
+        /// Executes Assert on each element of the collection
         /// </summary>
         /// <param name="results">Input Async Result Collection</param>
-        /// <param name="function">The function to execute</param>
+        /// <param name="assertion">The assertion to execute</param>
         /// <typeparam name="TSucc">Input type</typeparam>
         /// <returns>Collection after executing function on each element</returns>
-        public static IEnumerable<Result<TSucc>> IfEach<TSucc>(this IEnumerable<Result<TSucc>> results,
-            Func<TSucc, Result<bool>> function)
+        public static IEnumerable<Result<TSucc>> AssertEach<TSucc>(this IEnumerable<Result<TSucc>> results,
+            Func<TSucc, Result<bool>> assertion)
             where TSucc: notnull
         {
-            return results.Select(x => x.If(function));
+            return results.Select(x => x.Assert(assertion));
         }
         
         /// <summary>
-        /// Executes If on each element of the collection
+        /// Executes Assert on each element of the collection
         /// </summary>
         /// <param name="results">Input Async Result Collection</param>
-        /// <param name="function">The function to execute</param>
+        /// <param name="assertion">The assertion to execute</param>
         /// <param name="mapException">The mapping function for the error</param>
         /// <typeparam name="TSucc">Input type</typeparam>
         /// <returns>Collection after executing function on each element</returns>
-        public static IEnumerable<Result<TSucc>> IfEach<TSucc>(this IEnumerable<Result<TSucc>> results,
-            Func<TSucc, bool> function, ExceptionFilter mapException)
+        public static IEnumerable<Result<TSucc>> AssertEach<TSucc>(this IEnumerable<Result<TSucc>> results,
+            Func<TSucc, bool> assertion, ExceptionFilter mapException)
             where TSucc: notnull
         {
-            return results.Select(x => x.If(function, mapException));
+            return results.Select(x => x.Assert(assertion, mapException));
         }
 
         /// <summary>
