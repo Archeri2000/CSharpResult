@@ -25,4 +25,13 @@ namespace CSharp_Result
             return e => filter(e) || e is T;
         }
     }
+
+    public class AssertionException : Exception
+    {
+        public AssertionException():base(){}
+
+        public AssertionException(string message) : base(message) {}
+
+        public AssertionException(string message, Exception inner) : base(message, inner){}
+    }
 }

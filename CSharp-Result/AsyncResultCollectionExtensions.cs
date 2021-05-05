@@ -218,7 +218,7 @@ namespace CSharp_Result
          where TSucc : notnull
          where TResult : notnull
       {
-         return results.DoAwaitEach(function.ToAsyncResultFunc(mapException));
+         return results.Select(x => x.DoAwait(function, mapException));
       }
       
       /// <summary>
@@ -232,7 +232,7 @@ namespace CSharp_Result
       public static IEnumerable<Task<Result<TSucc>>> DoAwaitEach<TSucc>(this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc, Task> function, ExceptionFilter mapException) 
          where TSucc : notnull
       {
-         return results.DoAwaitEach(function.ToAsyncResultFunc(mapException));
+         return results.Select(x => x.DoAwait(function, mapException));
       }
       
       /// <summary>
@@ -261,7 +261,7 @@ namespace CSharp_Result
       public static IEnumerable<Task<Result<TSucc>>> DoEach<TSucc, TResult>(this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc, TResult> function, ExceptionFilter mapException) 
          where TSucc : notnull
       {
-         return results.DoEach(function.ToResultFunc(mapException));
+         return results.Select(x => x.Do(function, mapException));
       }
       
       /// <summary>
@@ -275,7 +275,7 @@ namespace CSharp_Result
       public static IEnumerable<Task<Result<TSucc>>> DoEach<TSucc>(this IEnumerable<Task<Result<TSucc>>> results, Action<TSucc> function, ExceptionFilter mapException) 
          where TSucc : notnull
       {
-         return results.DoEach(function.ToResultFunc(mapException));
+         return results.Select(x => x.Do(function, mapException));
       }
 
       /// <summary>
@@ -305,7 +305,7 @@ namespace CSharp_Result
          where TSucc : notnull
          where TResult : notnull
       {
-         return results.ThenAwaitEach(function.ToAsyncResultFunc(mapException));
+         return results.Select(x => x.ThenAwait(function, mapException));
       }
       
       /// <summary>
@@ -319,7 +319,7 @@ namespace CSharp_Result
       public static IEnumerable<Task<Result<Unit>>> ThenAwaitEach<TSucc>(this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc, Task> function, ExceptionFilter mapException) 
          where TSucc : notnull
       {
-         return results.ThenAwaitEach(function.ToAsyncResultFunc(mapException));
+         return results.Select(x => x.ThenAwait(function, mapException));
       }
       
       /// <summary>
@@ -350,7 +350,7 @@ namespace CSharp_Result
          where TSucc : notnull
          where TResult : notnull
       {
-         return results.ThenEach(function.ToResultFunc(mapException));
+         return results.Select(x => x.Then(function, mapException));
       }
       
       /// <summary>
@@ -364,62 +364,62 @@ namespace CSharp_Result
       public static IEnumerable<Task<Result<Unit>>> ThenEach<TSucc>(this IEnumerable<Task<Result<TSucc>>> results, Action<TSucc> function, ExceptionFilter mapException) 
          where TSucc : notnull
       {
-         return results.ThenEach(function.ToResultFunc(mapException));
+         return results.Select(x => x.Then(function, mapException));
 
       }
       
       /// <summary>
-      /// Executes Async If on each element of the collection
+      /// Executes Async Assert on each element of the collection
       /// </summary>
       /// <param name="results">Input Async Result Collection</param>
-      /// <param name="function">The function to execute</param>
+      /// <param name="assertion">The assertion to execute</param>
       /// <typeparam name="TSucc">Input type</typeparam>
       /// <returns>Collection after executing function on each element</returns>
-      public static IEnumerable<Task<Result<TSucc>>> IfAwaitEach<TSucc>(this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc, Task<Result<bool>>> function) 
+      public static IEnumerable<Task<Result<TSucc>>> AssertAwaitEach<TSucc>(this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc, Task<Result<bool>>> assertion) 
          where TSucc : notnull
       {
-         return results.Select(x => x.IfAwait(function));
+         return results.Select(x => x.AssertAwait(assertion));
       }
 
       /// <summary>
-      /// Executes Async If on each element of the collection
+      /// Executes Async Assert on each element of the collection
       /// </summary>
       /// <param name="results">Input Async Result Collection</param>
-      /// <param name="function">The function to execute</param>
+      /// <param name="assertion">The assertion to execute</param>
       /// <param name="mapException">The mapping function for the error</param>
       /// <typeparam name="TSucc">Input type</typeparam>
       /// <returns>Collection after executing function on each element</returns>
-      public static IEnumerable<Task<Result<TSucc>>> IfAwaitEach<TSucc>(this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc, Task<bool>> function, ExceptionFilter mapException) 
+      public static IEnumerable<Task<Result<TSucc>>> AssertAwaitEach<TSucc>(this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc, Task<bool>> assertion, ExceptionFilter mapException) 
          where TSucc : notnull
       {
-         return results.IfAwaitEach(function.ToAsyncResultFunc(mapException));
+         return results.Select(x => x.AssertAwait(assertion, mapException));
       }
 
       /// <summary>
-      /// Executes If on each element of the collection
+      /// Executes Assert on each element of the collection
       /// </summary>
       /// <param name="results">Input Async Result Collection</param>
-      /// <param name="function">The function to execute</param>
+      /// <param name="assertion">The assertion to execute</param>
       /// <typeparam name="TSucc">Input type</typeparam>
       /// <returns>Collection after executing function on each element</returns>
-      public static IEnumerable<Task<Result<TSucc>>> If<TSucc>(this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc, Result<bool>> function) 
+      public static IEnumerable<Task<Result<TSucc>>> If<TSucc>(this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc, Result<bool>> assertion) 
          where TSucc : notnull
       {
-         return results.Select(x => x.If(function));
+         return results.Select(x => x.Assert(assertion));
       }
 
       /// <summary>
-      /// Executes If on each element of the collection
+      /// Executes Assert on each element of the collection
       /// </summary>
       /// <param name="results">Input Async Result Collection</param>
-      /// <param name="function">The function to execute</param>
+      /// <param name="assertion">The assertion to execute</param>
       /// <param name="mapException">The mapping function for the error</param>
       /// <typeparam name="TSucc">Input type</typeparam>
       /// <returns>Collection after executing function on each element</returns>
-      public static IEnumerable<Task<Result<TSucc>>> If<TSucc>(this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc, bool> function, ExceptionFilter mapException) 
+      public static IEnumerable<Task<Result<TSucc>>> If<TSucc>(this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc, bool> assertion, ExceptionFilter mapException) 
          where TSucc : notnull
       {
-         return results.If(function.ToResultFunc(mapException));
+         return results.Select(x => x.Assert(assertion, mapException));
       }
 
       /// <summary>
