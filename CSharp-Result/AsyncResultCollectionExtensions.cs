@@ -402,7 +402,7 @@ namespace CSharp_Result
       /// <param name="assertion">The assertion to execute</param>
       /// <typeparam name="TSucc">Input type</typeparam>
       /// <returns>Collection after executing function on each element</returns>
-      public static IEnumerable<Task<Result<TSucc>>> If<TSucc>(this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc, Result<bool>> assertion) 
+      public static IEnumerable<Task<Result<TSucc>>> AssertEach<TSucc>(this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc, Result<bool>> assertion) 
          where TSucc : notnull
       {
          return results.Select(x => x.Assert(assertion));
@@ -416,10 +416,38 @@ namespace CSharp_Result
       /// <param name="mapException">The mapping function for the error</param>
       /// <typeparam name="TSucc">Input type</typeparam>
       /// <returns>Collection after executing function on each element</returns>
-      public static IEnumerable<Task<Result<TSucc>>> If<TSucc>(this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc, bool> assertion, ExceptionFilter mapException) 
+      public static IEnumerable<Task<Result<TSucc>>> AssertEach<TSucc>(this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc, bool> assertion, ExceptionFilter mapException) 
          where TSucc : notnull
       {
          return results.Select(x => x.Assert(assertion, mapException));
+      }
+      
+      /// <summary>
+      /// Executes If on each element of the collection
+      /// Both Then and Else should return the same type.
+      /// </summary>
+      /// <param name="results">Input Async Result Collection</param>
+      /// <param name="predicate">The predicate to check</param>
+      /// <param name="Then">The function to execute if predicate returns True</param>
+      /// <param name="Else">The function to execute if predicate returns False</param>
+      /// <returns>Collection after executing function on each element</returns>
+      public static IEnumerable<Task<Result<TResult>>> IfEach<TSucc, TResult>(this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc,Result<bool>> predicate, Func<TSucc, Result<TResult>> Then, Func<TSucc, Result<TResult>> Else)
+      {
+         return results.Select(x => x.If(predicate, Then, Else));
+      }
+      
+      /// <summary>
+      /// Executes If on each element of the collection
+      /// Both Then and Else should return the same type.
+      /// </summary>
+      /// <param name="results">Input Async Result Collection</param>
+      /// <param name="predicate">The async predicate to check</param>
+      /// <param name="Then">The async function to execute if predicate returns True</param>
+      /// <param name="Else">The async function to execute if predicate returns False</param>
+      /// <returns>Collection after executing function on each element</returns>
+      public static IEnumerable<Task<Result<TResult>>> IfAwaitEach<TSucc, TResult>(this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc,Task<Result<bool>>> predicate, Func<TSucc, Task<Result<TResult>>> Then, Func<TSucc, Task<Result<TResult>>> Else)
+      {
+         return results.Select(x => x.IfAwait(predicate, Then, Else));
       }
 
       /// <summary>

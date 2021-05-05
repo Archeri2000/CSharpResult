@@ -13,6 +13,7 @@
         <RepositoryType>git</RepositoryType>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <Version>0.0.5</Version>
+        <Nullable>enable</Nullable>
     </PropertyGroup>
 
 </Project>

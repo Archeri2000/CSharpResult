@@ -44,7 +44,7 @@ namespace CSharp_Result
         /// <returns>True if Result is a Failure</returns>
         public bool IsFailure()
         {
-            return this.Match(Success:s => false, Failure: e => true);
+            return this.Match(Success:_ => false, Failure: _ => true);
         }
         
         /// <summary>
@@ -61,7 +61,7 @@ namespace CSharp_Result
         /// </summary>
         /// <param name="error">out parameter to hold the error value</param>
         /// <returns>True if Result is a Failure</returns>
-        public bool IsFailure(out Exception error)
+        public bool IsFailure(out Exception? error)
         {
             bool ret;
             (error, ret) = this.Match(Success:_ => (null, false), Failure: e => (e, true));
@@ -124,7 +124,7 @@ namespace CSharp_Result
         /// <param name="function">The function to execute</param>
         /// <typeparam name="TResult">The type of the result of the computation (unused)</typeparam>
         /// <returns>Either the Success, or a Failure</returns>
-        public Result<TSucc> Do<TResult>(Func<TSucc,Result<TResult>> function)
+        public Result<TSucc> Do<TResult>(Func<TSucc,Result<TResult>> function) where TResult : notnull
         {
             return this.Then(
                 s =>
@@ -224,6 +224,19 @@ namespace CSharp_Result
         public Result<TSucc> Assert(Func<TSucc,bool> assertion, ExceptionFilter mapException)
         {
             return Assert(assertion.ToResultFunc(mapException));
+        }
+
+        /// <summary>
+        /// If holding a Success, checks if the result fulfils a predicate. If yes execute Then, otherwise execute Else
+        /// Both Then and Else should return the same type.
+        /// </summary>
+        /// <param name="predicate">The predicate to check</param>
+        /// <param name="Then">The function to execute if predicate returns True</param>
+        /// <param name="Else">The function to execute if predicate returns False</param>
+        /// <returns>Either the Success, or a Failure</returns>
+        public Result<TResult> If<TResult>(Func<TSucc,Result<bool>> predicate, Func<TSucc, Result<TResult>> Then, Func<TSucc, Result<TResult>> Else)
+        {
+            return this.Then(s => predicate(s).IsSuccess() ? Then(s) : Else(s));
         }
 
         /// <summary>
