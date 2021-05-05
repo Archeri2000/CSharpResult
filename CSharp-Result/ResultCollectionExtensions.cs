@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using static CSharp_Result.Errors;
 
@@ -59,7 +60,8 @@ namespace CSharp_Result
         }
 
         /// <summary>
-        /// Returns all the contents of the underlying Results if all elements succeed, otherwise throw an aggregate exception with all failures
+        /// Returns all the contents of the underlying Results if all elements succeed,
+        /// Otherwise throw an aggregate exception with all failures
         /// </summary>
         /// <param name="collection">The collection to parse</param>
         /// <typeparam name="TSucc">The type of the success wrapped</typeparam>
@@ -142,7 +144,7 @@ namespace CSharp_Result
         /// <summary>
         /// Executes Do on each element of the collection
         /// </summary>
-        /// <param name="results">Input Async Result Collection</param>
+        /// <param name="results">Input Result Collection</param>
         /// <param name="function">The function to execute</param>
         /// <typeparam name="TSucc">Input type</typeparam>
         /// <typeparam name="TResult">The type of the result of the computation (unused)</typeparam>
@@ -158,7 +160,7 @@ namespace CSharp_Result
         /// <summary>
         /// Executes Do on each element of the collection
         /// </summary>
-        /// <param name="results">Input Async Result Collection</param>
+        /// <param name="results">Input Result Collection</param>
         /// <param name="function">The function to execute</param>
         /// <param name="mapException">The mapping function for the error</param>
         /// <typeparam name="TSucc">Input type</typeparam>
@@ -174,7 +176,7 @@ namespace CSharp_Result
         /// <summary>
         /// Executes Do on each element of the collection
         /// </summary>
-        /// <param name="results">Input Async Result Collection</param>
+        /// <param name="results">Input Result Collection</param>
         /// <param name="function">The function to execute</param>
         /// <param name="mapException">The mapping function for the error</param>
         /// <typeparam name="TSucc">Input type</typeparam>
@@ -189,7 +191,7 @@ namespace CSharp_Result
         /// <summary>
         /// Executes Then on each element of the collection
         /// </summary>
-        /// <param name="results">Input Async Result Collection</param>
+        /// <param name="results">Input Result Collection</param>
         /// <param name="function">The function to execute</param>
         /// <typeparam name="TSucc">Input type</typeparam>
         /// <typeparam name="TResult">The type of the result of the computation</typeparam>
@@ -205,7 +207,7 @@ namespace CSharp_Result
         /// <summary>
         /// Executes Then on each element of the collection
         /// </summary>
-        /// <param name="results">Input Async Result Collection</param>
+        /// <param name="results">Input Result Collection</param>
         /// <param name="function">The function to execute</param>
         /// <param name="mapException">The mapping function for the error</param>
         /// <typeparam name="TSucc">Input type</typeparam>
@@ -222,7 +224,7 @@ namespace CSharp_Result
         /// <summary>
         /// Executes Then on each element of the collection
         /// </summary>
-        /// <param name="results">Input Async Result Collection</param>
+        /// <param name="results">Input Result Collection</param>
         /// <param name="function">The function to execute</param>
         /// <param name="mapException">The mapping function for the error</param>
         /// <typeparam name="TSucc">Input type</typeparam>
@@ -237,7 +239,7 @@ namespace CSharp_Result
         /// <summary>
         /// Executes Assert on each element of the collection
         /// </summary>
-        /// <param name="results">Input Async Result Collection</param>
+        /// <param name="results">Input Result Collection</param>
         /// <param name="assertion">The assertion to execute</param>
         /// <typeparam name="TSucc">Input type</typeparam>
         /// <returns>Collection after executing function on each element</returns>
@@ -251,7 +253,7 @@ namespace CSharp_Result
         /// <summary>
         /// Executes Assert on each element of the collection
         /// </summary>
-        /// <param name="results">Input Async Result Collection</param>
+        /// <param name="results">Input Result Collection</param>
         /// <param name="assertion">The assertion to execute</param>
         /// <param name="mapException">The mapping function for the error</param>
         /// <typeparam name="TSucc">Input type</typeparam>
@@ -264,14 +266,34 @@ namespace CSharp_Result
         }
 
         /// <summary>
+        /// Executes If on each element of the collection
+        /// Both Then and Else should return the same type.
+        /// </summary>
+        /// <param name="results">Input Result Collection</param>
+        /// <param name="predicate">The predicate to check</param>
+        /// <param name="Then">The function to execute if predicate returns True</param>
+        /// <param name="Else">The function to execute if predicate returns False</param>
+        /// <returns>Collection after executing function on each element</returns>
+        [SuppressMessage("ReSharper", "InconsistentNaming")]
+        public static IEnumerable<Result<TResult>> IfEach<TSucc, TResult>(
+            this IEnumerable<Result<TSucc>> results,
+            Func<TSucc, Result<bool>> predicate, 
+            Func<TSucc, Result<TResult>> Then, 
+            Func<TSucc, Result<TResult>> Else)
+        {
+            return results.Select(x => x.If(predicate, Then, Else));
+        }
+
+        /// <summary>
         /// Executes Match on each element of the collection
         /// </summary>
-        /// <param name="results">Input Async Result Collection</param>
+        /// <param name="results">Input Result Collection</param>
         /// <param name="Success">The function to execute if Result is Success</param>
         /// <param name="Failure">The function to execute if Result is Error</param>
         /// <typeparam name="TSucc">Input type</typeparam>
         /// <typeparam name="TResult">Return type</typeparam>
         /// <returns>Collection after executing function on each element</returns>
+        [SuppressMessage("ReSharper", "InconsistentNaming")]
         public static IEnumerable<TResult> MatchEach<TSucc, TResult>(this IEnumerable<Result<TSucc>> results,
             Func<TSucc, TResult> Success, Func<Exception, TResult> Failure)
         {
@@ -281,11 +303,12 @@ namespace CSharp_Result
         /// <summary>
         /// Executes Match on each element of the collection
         /// </summary>
-        /// <param name="results">Input Async Result Collection</param>
+        /// <param name="results">Input Result Collection</param>
         /// <param name="Success">The function to execute if Result is Success</param>
         /// <param name="Failure">The function to execute if Result is Error</param>
         /// <typeparam name="TSucc">Input type</typeparam>
         /// <returns>Collection after executing function on each element</returns>
+        [SuppressMessage("ReSharper", "InconsistentNaming")]
         public static void MatchEach<TSucc>(this IEnumerable<Result<TSucc>> results,
             Action<TSucc> Success, Action<Exception> Failure)
         {

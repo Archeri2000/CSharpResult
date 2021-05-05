@@ -33,7 +33,7 @@ namespace CSharp_Result
       }
       
       /// <summary>
-      /// Converts a normal single argument function into a new function that outputs a Result.
+      /// Converts a normal single argument function into a new function that outputs an Async Result.
       /// </summary>
       /// <param name="func">Function to execute</param>
       /// <param name="mapException">Exceptions to catch and map to Failure</param>
@@ -58,7 +58,7 @@ namespace CSharp_Result
       }
       
       /// <summary>
-      /// Converts a normal single argument void function into a new function that outputs a Result.
+      /// Converts a normal single argument void function into a new function that outputs an Async Result.
       /// </summary>
       /// <param name="func">Function to execute</param>
       /// <param name="mapException">Exceptions to catch and map to Failure</param>
@@ -80,6 +80,68 @@ namespace CSharp_Result
             }
          });
       }
+      
+      /// <summary>
+      /// Converts a normal single argument function into a new function that outputs an Async Result.
+      /// </summary>
+      /// <param name="func">Function to execute</param>
+      /// <param name="mapException">Exceptions to catch and map to Failure</param>
+      /// <typeparam name="TInput">Input type</typeparam>
+      /// <typeparam name="TSucc">Output type</typeparam>
+      /// <returns>Async Function that outputs a Success if successful, converting relevant Exceptions into Failure</returns>
+      public static Func<TInput, Task<Result<TSucc>>> ToAsyncResultFunc<TInput, TSucc>(this Func<TInput, TSucc> func, ExceptionFilter mapException) 
+         where TSucc : notnull
+      {
+         return (async x =>
+         {
+            try
+            {
+               return func(x);
+            }
+            catch(Exception e)
+            {
+               if (!mapException(e)) throw;
+               return e;
+            }
+         });
+      }
+      
+      /// <summary>
+      /// Converts a normal single argument void function into a new function that outputs an Async Result.
+      /// </summary>
+      /// <param name="func">Function to execute</param>
+      /// <param name="mapException">Exceptions to catch and map to Failure</param>
+      /// <typeparam name="TInput">Input type</typeparam>
+      /// <returns>Async Function that outputs a Success of Unit if successful, converting relevant Exceptions into Failure</returns>
+      public static Func<TInput, Task<Result<Unit>>> ToAsyncResultFunc<TInput>(this Action<TInput> func, ExceptionFilter mapException) 
+      {
+         return (async x =>
+         {
+            try
+            {
+               func(x);
+               return new Unit();
+            }
+            catch(Exception e)
+            {
+               if (!mapException(e)) throw;
+               return e;
+            }
+         });
+      }
+      
+      /// <summary>
+      /// Converts a normal single argument result function into a new function that outputs an Async Result.
+      /// </summary>
+      /// <param name="func">Function to execute</param>
+      /// <typeparam name="TInput">Input type</typeparam>
+      /// <typeparam name="TSucc">Output type</typeparam>
+      /// <returns>Async Function that outputs a Success if successful, converting relevant Exceptions into Failure</returns>
+      public static Func<TInput, Task<Result<TSucc>>> ToAsyncResultFunc<TInput, TSucc>(this Func<TInput, Result<TSucc>> func) 
+         where TSucc : notnull
+      {
+         return async x => func(x);
+      }
 
       /// <summary>
       /// Checks if value contained in Async Result is not null
@@ -90,7 +152,7 @@ namespace CSharp_Result
       public static async Task<Result<TSucc>> IsNotNull<TSucc>(this Task<Result<TSucc>> result)
       {
          return (await result).Match(
-            Success: x => (Result<TSucc>)x?? (Result<TSucc>)new NullReferenceException(),
+            Success: x => (Result<TSucc>)x??(Result<TSucc>)new NullReferenceException(),
             Failure: x => x
          );
       }
@@ -511,6 +573,32 @@ namespace CSharp_Result
          where TSucc : notnull
       {
          return res.Assert(assertion.ToResultFunc(mapException));
+      }
+      
+      /// <summary>
+      /// If holding a Success, checks if the async result fulfils an async predicate. If yes execute Then, otherwise execute Else
+      /// Both Then and Else should return the same type.
+      /// </summary>
+      /// <param name="predicate">The async predicate to check</param>
+      /// <param name="Then">The async function to execute if predicate returns True</param>
+      /// <param name="Else">The async function to execute if predicate returns False</param>
+      /// <returns>Either the Success, or a Failure</returns>
+      public static async Task<Result<TResult>> IfAwait<TSucc, TResult>(this Task<Result<TSucc>> res, Func<TSucc,Task<Result<bool>>> predicate, Func<TSucc, Task<Result<TResult>>> Then, Func<TSucc, Task<Result<TResult>>> Else)
+      {
+         return await res.ThenAwait(async s => await predicate(s).IsSuccess() ? await Then(s) : await Else(s));
+      }
+      
+      /// <summary>
+      /// If holding a Success, checks if the async result fulfils a predicate. If yes execute Then, otherwise execute Else
+      /// Both Then and Else should return the same type.
+      /// </summary>
+      /// <param name="predicate">The predicate to check</param>
+      /// <param name="Then">The function to execute if predicate returns True</param>
+      /// <param name="Else">The function to execute if predicate returns False</param>
+      /// <returns>Either the Success, or a Failure</returns>
+      public static async Task<Result<TResult>> If<TSucc, TResult>(this Task<Result<TSucc>> res, Func<TSucc,Result<bool>> predicate, Func<TSucc, Result<TResult>> Then, Func<TSucc, Result<TResult>> Else)
+      {
+         return await res.Then(s => predicate(s).IsSuccess() ? Then(s) : Else(s));
       }
    }
 }
