@@ -3,13 +3,27 @@ using static CSharp_Result.Errors;
 
 namespace CSharp_Result
 {
+
+    /// <summary>
+    /// The variant of Do function to use (Either Fire and Forget, or check if it succeeds)
+    /// </summary>
+    public enum DoType
+    {
+        /// <summary>
+        /// Any errors that are returned will be mapped to a Failure which is returned from the Do. Exceptions will still fire.
+        /// </summary>
+        MapErrors, 
+        /// <summary>
+        /// Any errors that are returned will be ignored (fire and forget). Exceptions will still fire.
+        /// </summary>
+        Ignore
+    }
  
     /// <summary>
     /// A C# Result type for implementing Railway-Oriented Programming style code.
     /// </summary>
     /// <typeparam name="TSucc">The return type on Success</typeparam>
     public abstract class Result<TSucc> 
-        where TSucc : notnull
     {
         public static implicit operator Result<TSucc>(TSucc val) => new Success<TSucc>(val);
         public static implicit operator Result<TSucc>(Exception err) => new Failure<TSucc>(err);
@@ -21,9 +35,8 @@ namespace CSharp_Result
         /// <returns>true if the inner wrapped values are equal</returns>
         public override bool Equals(object? obj)
         {
-            if (obj is not Result<TSucc>) return false;
-            
-            var other = (Result<TSucc>) obj;
+            if (obj is not Result<TSucc> other) return false;
+
             return Match(
                 x => other.Match(y => x.Equals(y), _ => false),
                 x => other.Match(_ => false, y => x.Equals(y)));
@@ -53,7 +66,7 @@ namespace CSharp_Result
         /// <returns>True if Result is contains a Success</returns>
         public bool IsSuccess()
         {
-            return !IsFailure();
+            return this.Match(Success:_ => true, Failure: _ => false);
         }
         
         /// <summary>
@@ -73,7 +86,7 @@ namespace CSharp_Result
         /// </summary>
         /// <param name="success">out parameter to hold the success value</param>
         /// <returns>True if Result is contains a Success</returns>
-        public bool IsSuccess(out TSucc success)
+        public bool IsSuccess(out TSucc? success)
         {
             bool ret;
             (success, ret) = this.Match(Success: s => (s, true), Failure: _ => (default, false));
@@ -97,7 +110,7 @@ namespace CSharp_Result
         /// </summary>
         /// <param name="defaultImpl">Optional default value to return</param>
         /// <returns>Success or default value</returns>
-        public TSucc SuccessOrDefault(TSucc defaultImpl = default)
+        public TSucc? SuccessOrDefault(TSucc? defaultImpl = default)
         {
             return this.Match(
                 Success: s => s,
@@ -110,28 +123,33 @@ namespace CSharp_Result
         /// </summary>
         /// <param name="defaultImpl">Optional default value to return</param>
         /// <returns>Failure or default value</returns>
-        public Exception FailureOrDefault(Exception defaultImpl = default)
+        public Exception? FailureOrDefault(Exception? defaultImpl = default)
         {
             return this.Match(
                 Success: s => defaultImpl,
                 Failure: e => e
             );
         }
-        
+
         /// <summary>
         /// If holding a Success, Executes the function with the result as input.
         /// </summary>
+        /// <param name="type">The type of Do function to use</param>
         /// <param name="function">The function to execute</param>
         /// <typeparam name="TResult">The type of the result of the computation (unused)</typeparam>
         /// <returns>Either the Success, or a Failure</returns>
-        public Result<TSucc> Do<TResult>(Func<TSucc,Result<TResult>> function) where TResult : notnull
+        public Result<TSucc> Do<TResult>(DoType type, Func<TSucc,Result<TResult>> function)
         {
-            return this.Then(
-                s =>
-                {
-                    return function(s).Then(_ => (Result<TSucc>)s);
-                }
-            );
+            return type switch
+            {
+                DoType.MapErrors => this.Then(s => { return function(s).Then(_ => (Result<TSucc>) s); }),
+                DoType.Ignore => this.Then<TSucc>(s =>
+                                        {
+                                            function(s);
+                                            return s;
+                                        }),
+                _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
+            };
         }
         
         /// <summary>
@@ -142,9 +160,9 @@ namespace CSharp_Result
         /// <param name="mapException">The mapping function for the error</param>
         /// <typeparam name="TResult">The type of the result of the computation (unused)</typeparam>
         /// <returns>Either the Success, or a Failure</returns>
-        public Result<TSucc> Do<TResult>(Func<TSucc,TResult> function, ExceptionFilter mapException)
+        public Result<TSucc> Do<TResult>(DoType type, Func<TSucc,TResult> function, ExceptionFilter mapException)
         {
-            return Do(function.ToResultFunc(mapException));
+            return Do(type, function.ToResultFunc(mapException));
         }
         
         /// <summary>
@@ -154,9 +172,9 @@ namespace CSharp_Result
         /// <param name="function">The function to execute</param>
         /// <param name="mapException">The mapping function for the error</param>
         /// <returns>Either the Success, or a Failure</returns>
-        public Result<TSucc> Do(Action<TSucc> function, ExceptionFilter mapException)
+        public Result<TSucc> Do(DoType type, Action<TSucc> function, ExceptionFilter mapException)
         {
-            return Do(function.Unit(), mapException);
+            return Do(type, function.Unit(), mapException);
         }
         
         /// <summary>
