@@ -194,88 +194,94 @@ namespace CSharp_Result
       /// Executes Async Do on each element of the collection
       /// </summary>
       /// <param name="results">Input Async Result Collection</param>
+      /// <param name="type">The type of Do function to use</param>
       /// <param name="function">The function to execute</param>
       /// <typeparam name="TSucc">Input type</typeparam>
       /// <typeparam name="TResult">The type of the result of the computation (unused)</typeparam>
       /// <returns>Collection after executing function on each element</returns>
-      public static IEnumerable<Task<Result<TSucc>>> DoAwaitEach<TSucc, TResult>(this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc, Task<Result<TResult>>> function) 
+      public static IEnumerable<Task<Result<TSucc>>> DoAwaitEach<TSucc, TResult>(this IEnumerable<Task<Result<TSucc>>> results, DoType type, Func<TSucc, Task<Result<TResult>>> function) 
          where TSucc : notnull
          where TResult : notnull
         {
-           return results.Select(x => x.DoAwait(function));
+           return results.Select(x => x.DoAwait(type, function));
         }
 
       /// <summary>
       /// Executes Async Do on each element of the collection
       /// </summary>
       /// <param name="results">Input Async Result Collection</param>
+      /// <param name="type">The type of Do function to use</param>
       /// <param name="function">The function to execute</param>
       /// <param name="mapException">The mapping function for the error</param>
       /// <typeparam name="TSucc">Input type</typeparam>
       /// <typeparam name="TResult">The type of the result of the computation (unused)</typeparam>
       /// <returns>Collection after executing function on each element</returns>
-      public static IEnumerable<Task<Result<TSucc>>> DoAwaitEach<TSucc, TResult>(this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc, Task<TResult>> function, ExceptionFilter mapException) 
+      public static IEnumerable<Task<Result<TSucc>>> DoAwaitEach<TSucc, TResult>(this IEnumerable<Task<Result<TSucc>>> results, DoType type, Func<TSucc, Task<TResult>> function, ExceptionFilter mapException) 
          where TSucc : notnull
          where TResult : notnull
       {
-         return results.Select(x => x.DoAwait(function, mapException));
+         return results.Select(x => x.DoAwait(type, function, mapException));
       }
       
       /// <summary>
       /// Executes Async Do on each element of the collection
       /// </summary>
       /// <param name="results">Input Async Result Collection</param>
+      /// <param name="type">The type of Do function to use</param>
       /// <param name="function">The function to execute</param>
       /// <param name="mapException">The mapping function for the error</param>
       /// <typeparam name="TSucc">Input type</typeparam>
       /// <returns>Collection after executing function on each element</returns>
-      public static IEnumerable<Task<Result<TSucc>>> DoAwaitEach<TSucc>(this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc, Task> function, ExceptionFilter mapException) 
+      public static IEnumerable<Task<Result<TSucc>>> DoAwaitEach<TSucc>(this IEnumerable<Task<Result<TSucc>>> results, DoType type, Func<TSucc, Task> function, ExceptionFilter mapException) 
          where TSucc : notnull
       {
-         return results.Select(x => x.DoAwait(function, mapException));
+         return results.Select(x => x.DoAwait(type, function, mapException));
       }
       
       /// <summary>
       /// Executes Do on each element of the collection
       /// </summary>
       /// <param name="results">Input Async Result Collection</param>
+      /// <param name="type">The type of Do function to use</param>
       /// <param name="function">The function to execute</param>
       /// <typeparam name="TSucc">Input type</typeparam>
       /// <typeparam name="TResult">The type of the result of the computation (unused)</typeparam>
       /// <returns>Collection after executing function on each element</returns>
-      public static IEnumerable<Task<Result<TSucc>>> DoEach<TSucc, TResult>(this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc, Result<TResult>> function) 
+      public static IEnumerable<Task<Result<TSucc>>> DoEach<TSucc, TResult>(this IEnumerable<Task<Result<TSucc>>> results, DoType type, Func<TSucc, Result<TResult>> function) 
          where TSucc : notnull
       {
-         return results.Select(x => x.Do(function));
+         return results.Select(x => x.Do(type, function));
       }
 
       /// <summary>
       /// Executes Do on each element of the collection
       /// </summary>
       /// <param name="results">Input Async Result Collection</param>
+      /// <param name="type">The type of Do function to use</param>
       /// <param name="function">The function to execute</param>
       /// <param name="mapException">The mapping function for the error</param>
       /// <typeparam name="TSucc">Input type</typeparam>
       /// <typeparam name="TResult">The type of the result of the computation (unused)</typeparam>
       /// <returns>Collection after executing function on each element</returns>
-      public static IEnumerable<Task<Result<TSucc>>> DoEach<TSucc, TResult>(this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc, TResult> function, ExceptionFilter mapException) 
+      public static IEnumerable<Task<Result<TSucc>>> DoEach<TSucc, TResult>(this IEnumerable<Task<Result<TSucc>>> results, DoType type, Func<TSucc, TResult> function, ExceptionFilter mapException) 
          where TSucc : notnull
       {
-         return results.Select(x => x.Do(function, mapException));
+         return results.Select(x => x.Do(type, function, mapException));
       }
       
       /// <summary>
       /// Executes Do on each element of the collection
       /// </summary>
       /// <param name="results">Input Async Result Collection</param>
+      /// <param name="type">The type of Do function to use</param>
       /// <param name="function">The function to execute</param>
       /// <param name="mapException">The mapping function for the error</param>
       /// <typeparam name="TSucc">Input type</typeparam>
       /// <returns>Collection after executing function on each element</returns>
-      public static IEnumerable<Task<Result<TSucc>>> DoEach<TSucc>(this IEnumerable<Task<Result<TSucc>>> results, Action<TSucc> function, ExceptionFilter mapException) 
+      public static IEnumerable<Task<Result<TSucc>>> DoEach<TSucc>(this IEnumerable<Task<Result<TSucc>>> results, DoType type, Action<TSucc> function, ExceptionFilter mapException) 
          where TSucc : notnull
       {
-         return results.Select(x => x.Do(function, mapException));
+         return results.Select(x => x.Do(type, function, mapException));
       }
 
       /// <summary>
