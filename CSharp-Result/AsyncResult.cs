@@ -149,7 +149,7 @@ namespace CSharp_Result
       /// <param name="result">Result to check</param>
       /// <typeparam name="TSucc">Type of the value contained</typeparam>
       /// <returns>If value in Result is null, returns a NulLReferenceException as Failure</returns>
-      public static async Task<Result<TSucc>> IsNotNull<TSucc>(this Task<Result<TSucc>> result)
+      public static async Task<Result<TSucc>> AssertNotNull<TSucc>(this Task<Result<TSucc>> result)
       {
          return (await result).Match(
             Success: x => (Result<TSucc>)x??(Result<TSucc>)new NullReferenceException(),
