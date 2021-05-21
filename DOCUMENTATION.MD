@@ -1,14 +1,15 @@
 # Documentation
 
 ## Overview
-This library uses 4 method keywords to describe possible computation types. 
+This library uses 5 method keywords to describe possible computation types. 
 Each of these methods can be further modified by adding **Await** to add Async Effects, and **Each** to operate over a collection
 
 | Keyword  | Description  |
 |---|---|
 | Then | Executes a function and returns the output.|
-| Do | Executes a function and if output is Success, ignore it and return the input. | 
-| If | Executes a predicate and if output is True, ignore it and return the input.|
+| Do | Executes a function and if output is Success, ignore it and return the input. Do takes in an Enum which specifies whether to track if the function successfully runs or to ignore it. | 
+| Assert | Executes an assertion and either returns the original result or an assertion exception. |
+| If | Executes a predicate and if output is True, run and return the 'then' expression otherwise run and return the 'else' expression|
 | Match | If value is Success, execute first function, else execute second function |
 
 | Modifiers | Description |
@@ -20,28 +21,28 @@ For example:
 ```c#
 // Normal computation
 result.Then(...)
-    .If(...)
+    .Assert(...)
     .Then(...)
     .Do(...);
 
 // Async computations mixed with normal computations
 result.ThenAwait(...)
-    .If(...)
+    .Assert(...)
     .ThenAwait(...)
     .IfAwait(...)
     .DoAwait(...);
 
 // Collection computations
 results.ThenEach(...)
-    .IfEach(...)
+    .AssertEach(...)
     .ThenEach(...)
     .DoEach(...);
 
 // Async Result Collections mixed with normal computations
 results.ThenAwaitEach(...)
-    .IfEach(...)
+    .AssertEach(...)
     .ThenAwaitEach(...)
-    .IfAwaitEach(...)
+    .AssertAwaitEach(...)
     .DoAwaiteach(...);
 ```
 ## Result Type
@@ -101,26 +102,31 @@ Two static functions are included to cover the most common cases of exception ma
 ```c#
         public static class Errors{
             // Map no exceptions, thus throwing any caught exception
-            public static Exception MapNone(Exception e)
+            public static bool MapNone(Exception e)
             {
-                throw e;
+                return false;
             }
     
             // Map all exceptions, thus returning any caught exception
             public static Exception MapAll(Exception e)
             {
-                return e;
+                return true;
             }
         }
 ```
 Fine grained control can be achieved by implementing your own exception mapping function:
 ```c#
-    public static Exception CatchNullRefAndNotFound(Exception e){
+    public static bool CatchNullRefAndNotFound(Exception e){
         if(e is KeyNotFoundException || e is NullReferenceException){
-            return e;
+            return true;
         }
-        throw e;
+        return false;
     }
+```
+
+Alternatively you can describe the exception mapper in fluent syntax:
+```c#
+    var mapper = MapIfExceptionIs<KeyNotFoundException>().Or<NullReferenceException>();
 ```
 
 ### Converting to result type
@@ -159,22 +165,22 @@ Console.WriteLine(thenRes.SuccessOrDefault()); // Should print out 3 by unwrappi
 // Do is used to perform computation then discard the result, returning the input
 var printInt = ((Action<int>)(x => System.WriteLine(x))).ToResultFunc(Errors.MapNone);
 var doRes = 1.ToResult()
-            .Do(printInt); // Should print out 1
+            .Do(DoType.Ignore, printInt); // Should print out 1
 Console.WriteLine(doRes.SuccessOrDefault()); // Should print out 1 by unwrapping the value
 
-// If is used to check a boolean predicate. If the result returned is false, it returns a Failure.
+// Assert is used to check a boolean predicate. If the result returned is false, it returns a Failure.
 var isEven = ((Func<int,bool>)(x => x%2==0)).ToResultFunc(Errors.MapNone);
 var result = 1.ToResult()
-                .If(isEven) //Will return a failure here due to predicate check
+                .Assert(isEven) //Will return a failure here due to predicate check
                 .Then(add1);
 
 
 
 // Combining them to construct workflows
 var result = 1.ToResult()
-                .Do(printInt) // Prints 1
+                .Do(DoType.Ignore, printInt) // Prints 1
                 .Then(add1) // Adds 1 to 1
-                .Do(printInt) // Prints 2
+                .Do(DoType.Ignore, printInt) // Prints 2
                 .Then(add1); //Adds 1 to 2
 Console.WriteLine(result.SuccessOrDefault()); //Prints 3
 ```
@@ -184,7 +190,7 @@ If at any step the result returned is a Failure, the remaining steps will not be
 // Example
 var result = resourceModel.ToResult()
                     .Then(ConvertToDomain)
-                    .If(model => Validate(model, arg2, arg3))
+                    .Assert(model => Validate(model, arg2, arg3))
                     .Do(model => db.Save(model))
                     .Then(ConvertToResponse);
 ```
@@ -194,16 +200,26 @@ Processing the final result can be done in several ways. It is possible to check
 var result = resource.ToResult()...;
 
 //Check success
-if(result.IsSuccess){
+if(result.IsSuccess()){
     //Unwrap
     var value = result.SuccessOrDefault();
     ...
 }
 
+//Check success with out variable
+if(result.IsSuccess(out var succ)){
+    //use succ here
+}
+
 //Check failure
-if(result.IsFailure){
+if(result.IsFailure()){
     var error = result.FailureOrDefault();
     ...
+}
+
+//Check failure with out variable
+if(result.IsFailure(out var err)){
+    //use err here and handle it
 }
 ```
 
@@ -237,7 +253,7 @@ var ls = new List<int>();
 ...
 var results = ls.ToResultCollection()
                 .DoEach(...)
-                .IfEach(...)
+                .AssertEach(...)
                 .ThenEach(...)
                 .MatchEach(...);
 ```
@@ -288,7 +304,7 @@ This can be used in combination with Then, Do and If to incorporate non async op
 ```c#
 var result = await model.ToAsyncResult()
                         .ThenAwait(...)
-                        .If(...)
+                        .Assert(...)
                         .DoAwait(...)
                         .Then(...)
                         .ThenAwait(...);
@@ -325,7 +341,7 @@ When an async operation needs to be executed, the **Await** keyword is used.
 ```c#
 var results = models.ToAsyncResultCollection()
                     .ThenEach(...)
-                    .IfAwaitEach(...)
+                    .AssertAwaitEach(...)
                     .ThenAwaitEach(...)
                     .DoEach(...);
 ```
