@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using static CSharp_Result.Errors;
 
 namespace CSharp_Result
@@ -25,7 +26,17 @@ namespace CSharp_Result
     /// <typeparam name="TSucc">The return type on Success</typeparam>
     public abstract class Result<TSucc> 
     {
+        /// <summary>
+        /// Implicitly converts a value to a Success result type
+        /// </summary>
+        /// <param name="val">The success value to convert</param>
+        /// <returns></returns>
         public static implicit operator Result<TSucc>(TSucc val) => new Success<TSucc>(val);
+        /// <summary>
+        /// Implicitly converts an exception to a Failure result type
+        /// </summary>
+        /// <param name="err">The exception value to convert</param>
+        /// <returns></returns>
         public static implicit operator Result<TSucc>(Exception err) => new Failure<TSucc>(err);
 
         /// <summary>
@@ -38,8 +49,8 @@ namespace CSharp_Result
             if (obj is not Result<TSucc> other) return false;
 
             return Match(
-                x => other.Match(y => x.Equals(y), _ => false),
-                x => other.Match(_ => false, y => x.Equals(y)));
+                x => other.Match(y => x is not null && x.Equals(y), _ => false),
+                x => other.Match(_ => false, x.Equals));
         }
 
         /// <summary>
@@ -48,7 +59,13 @@ namespace CSharp_Result
         /// <returns>Hash code of the contents of the Result</returns>
         public override int GetHashCode()
         {
-            return Match(x => x.GetHashCode(), x => x.GetHashCode());
+            return Match(
+                x =>
+                    {
+                        if (x is null) return 0;
+                        return x.GetHashCode();
+                    }, 
+                x => x.GetHashCode());
         }
 
         /// <summary>
@@ -77,7 +94,7 @@ namespace CSharp_Result
         public bool IsFailure(out Exception? error)
         {
             bool ret;
-            (error, ret) = this.Match(Success:_ => (null, false), Failure: e => (e, true));
+            (error, ret) = this.Match<(Exception?, bool)>(Success:_ => (null, false), Failure: e => (e, true));
             return ret;
         }
         
@@ -89,7 +106,7 @@ namespace CSharp_Result
         public bool IsSuccess(out TSucc? success)
         {
             bool ret;
-            (success, ret) = this.Match(Success: s => (s, true), Failure: _ => (default, false));
+            (success, ret) = this.Match<(TSucc?, bool)>(Success: s => (s, true), Failure: _ => (default, false));
             return ret;
         }
 
@@ -114,7 +131,7 @@ namespace CSharp_Result
         {
             return this.Match(
                 Success: s => s,
-                Failure: e => defaultImpl
+                Failure: _ => defaultImpl
             );
         }
 
@@ -126,7 +143,7 @@ namespace CSharp_Result
         public Exception? FailureOrDefault(Exception? defaultImpl = default)
         {
             return this.Match(
-                Success: s => defaultImpl,
+                Success: _ => defaultImpl,
                 Failure: e => e
             );
         }
@@ -151,11 +168,12 @@ namespace CSharp_Result
                 _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
             };
         }
-        
+
         /// <summary>
         /// If holding a Success, Executes the function with the result as input.
         /// If any exception is thrown, it is mapped by the mapper function.
         /// </summary>
+        /// <param name="type">Either Fire and Forget or Map Encountered Errors</param>
         /// <param name="function">The function to execute</param>
         /// <param name="mapException">The mapping function for the error</param>
         /// <typeparam name="TResult">The type of the result of the computation (unused)</typeparam>
@@ -169,6 +187,7 @@ namespace CSharp_Result
         /// If holding a Success, Executes the function with the result as input.
         /// If any exception is thrown, it is mapped by the mapper function.
         /// </summary>
+        /// <param name="type">Either Fire and Forget or Map Encountered Errors</param>
         /// <param name="function">The function to execute</param>
         /// <param name="mapException">The mapping function for the error</param>
         /// <returns>Either the Success, or a Failure</returns>
@@ -184,7 +203,7 @@ namespace CSharp_Result
         /// <param name="function">The function to execute</param>
         /// <typeparam name="TResult">The type of the result of the computation</typeparam>
         /// <returns>Either a Success from the computation, or a Failure</returns>
-        public Result<TResult> Then<TResult>(Func<TSucc, Result<TResult>> function) where TResult : notnull
+        public Result<TResult> Then<TResult>(Func<TSucc, Result<TResult>> function)
         {
             return this.Match(
                 Success: function,
@@ -252,6 +271,7 @@ namespace CSharp_Result
         /// <param name="Then">The function to execute if predicate returns True</param>
         /// <param name="Else">The function to execute if predicate returns False</param>
         /// <returns>Either the Success, or a Failure</returns>
+        [SuppressMessage("ReSharper", "InconsistentNaming")]
         public Result<TResult> If<TResult>(Func<TSucc,Result<bool>> predicate, Func<TSucc, Result<TResult>> Then, Func<TSucc, Result<TResult>> Else)
         {
             return this.Then(s => predicate(s).IsSuccess() ? Then(s) : Else(s));
@@ -279,6 +299,7 @@ namespace CSharp_Result
         /// <param name="Failure">Function to execute on Failure</param>
         /// <typeparam name="T">Return type of the function</typeparam>
         /// <returns>Object of type T</returns>
+        [SuppressMessage("ReSharper", "InconsistentNaming")]
         public T Match<T>(Func<TSucc, T> Success, Func<Exception, T> Failure)
         {
             return this switch
@@ -288,7 +309,7 @@ namespace CSharp_Result
                 _ => throw new NotSupportedException("Result is of Invalid State!")
             };
         }
-        
+
         /// <summary>
         /// Define continuations on the success and failure cases.
         /// If Result is Success, executes Success
@@ -297,9 +318,20 @@ namespace CSharp_Result
         /// <param name="Success">Function to execute on Success</param>
         /// <param name="Failure">Function to execute on Failure</param>
         /// <returns>Returns Unit, denoting null return (void function)</returns>
-        public Unit Match(Action<TSucc> Success, Action<Exception> Failure)
+        [SuppressMessage("ReSharper", "InconsistentNaming")]
+        public void Match(Action<TSucc> Success, Action<Exception> Failure)
         {
-            return Match(Success.Unit(), Failure.Unit());
+            switch (this)
+            {
+                case Success<TSucc> s:
+                    Success(s);
+                    break;
+                case Failure<TSucc> e:
+                    Failure(e);
+                    break;
+                default:
+                    throw new NotSupportedException("Result is of Invalid State!");
+            }
         }
     }
     
@@ -307,7 +339,7 @@ namespace CSharp_Result
     /// The Success case, containing a Success
     /// </summary>
     /// <typeparam name="TSucc">The type of the Success</typeparam>
-    public sealed class Success<TSucc>:Result<TSucc> where TSucc : notnull
+    public sealed class Success<TSucc>:Result<TSucc>
     {
         private readonly TSucc _val;
         public Success(TSucc val)
@@ -332,7 +364,7 @@ namespace CSharp_Result
     /// The Failure case, containing a Failure (Expected Exception)
     /// </summary>
     /// <typeparam name="TSucc">The type of the Success (for chaining purposes)</typeparam>
-    public sealed class Failure<TSucc> : Result<TSucc> where TSucc : notnull
+    public sealed class Failure<TSucc> : Result<TSucc>
     {
         private readonly Exception _err;
 
@@ -408,7 +440,9 @@ namespace CSharp_Result
         public static Result<TSucc> AssertNotNull<TSucc>(this Result<TSucc> result)
         {
             return result.Match(
-                Success: x => (Result<TSucc>)x?? (Result<TSucc>)new NullReferenceException(),
+                Success: x => x is not null?
+                    x:
+                    (Result<TSucc>)new NullReferenceException(),
                 Failure: x => x
             );
         }
