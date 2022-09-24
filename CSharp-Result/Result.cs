@@ -6,7 +6,7 @@ namespace CSharp_Result
 {
 
     /// <summary>
-    /// The variant of Do function to use (Either Fire and Forget, or check if it succeeds)
+    /// The variant of Do function to use (Either ignore returned errors or return an error if it fails)
     /// </summary>
     public enum DoType
     {
@@ -173,7 +173,7 @@ namespace CSharp_Result
         /// If holding a Success, Executes the function with the result as input.
         /// If any exception is thrown, it is mapped by the mapper function.
         /// </summary>
-        /// <param name="type">Either Fire and Forget or Map Encountered Errors</param>
+        /// <param name="type">Either Ignore Errors or Map Encountered Errors</param>
         /// <param name="function">The function to execute</param>
         /// <param name="mapException">The mapping function for the error</param>
         /// <typeparam name="TResult">The type of the result of the computation (unused)</typeparam>
@@ -187,13 +187,13 @@ namespace CSharp_Result
         /// If holding a Success, Executes the function with the result as input.
         /// If any exception is thrown, it is mapped by the mapper function.
         /// </summary>
-        /// <param name="type">Either Fire and Forget or Map Encountered Errors</param>
+        /// <param name="type">Either Ignore Errors or Map Encountered Errors</param>
         /// <param name="function">The function to execute</param>
         /// <param name="mapException">The mapping function for the error</param>
         /// <returns>Either the Success, or a Failure</returns>
         public Result<TSucc> Do(DoType type, Action<TSucc> function, ExceptionFilter mapException)
         {
-            return Do(type, function.Unit(), mapException);
+            return Do(type, function.ToResultFunc(mapException));
         }
         
         /// <summary>
