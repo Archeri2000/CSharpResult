@@ -9,12 +9,12 @@ namespace CSharp_Result
             return t;
         }
 
-        public static Predicate<object> Is<T>()
+        public static Func<object, bool> Is<T>()
         {
             return o => o is T;
         }
 
-        public static Predicate<object> Or<T>(this Predicate<object> pred)
+        public static Func<object, bool> Or<T>(this Func<object, bool> pred)
         {
             return o => pred(o) || o is T;
         }

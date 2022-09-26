@@ -379,12 +379,13 @@ namespace CSharp_Result
       /// </summary>
       /// <param name="results">Input Async Result Collection</param>
       /// <param name="assertion">The assertion to execute</param>
+      /// <param name="assertionMessage">The message in the AssertionException when the assertion fails</param>
       /// <typeparam name="TSucc">Input type</typeparam>
       /// <returns>Collection after executing function on each element</returns>
-      public static IEnumerable<Task<Result<TSucc>>> AssertAwaitEach<TSucc>(this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc, Task<Result<bool>>> assertion) 
+      public static IEnumerable<Task<Result<TSucc>>> AssertAwaitEach<TSucc>(this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc?, Task<Result<bool>>> assertion, string? assertionMessage = null) 
          where TSucc : notnull
       {
-         return results.Select(x => x.AssertAwait(assertion));
+         return results.Select(x => x.AssertAwait(assertion, assertionMessage));
       }
 
       /// <summary>
@@ -393,12 +394,13 @@ namespace CSharp_Result
       /// <param name="results">Input Async Result Collection</param>
       /// <param name="assertion">The assertion to execute</param>
       /// <param name="mapException">The mapping function for the error</param>
+      /// <param name="assertionMessage">The message in the AssertionException when the assertion fails</param>
       /// <typeparam name="TSucc">Input type</typeparam>
       /// <returns>Collection after executing function on each element</returns>
-      public static IEnumerable<Task<Result<TSucc>>> AssertAwaitEach<TSucc>(this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc, Task<bool>> assertion, ExceptionFilter mapException) 
+      public static IEnumerable<Task<Result<TSucc>>> AssertAwaitEach<TSucc>(this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc?, Task<bool>> assertion, ExceptionFilter mapException, string? assertionMessage = null) 
          where TSucc : notnull
       {
-         return results.Select(x => x.AssertAwait(assertion, mapException));
+         return results.Select(x => x.AssertAwait(assertion, mapException, assertionMessage));
       }
 
       /// <summary>
@@ -406,12 +408,13 @@ namespace CSharp_Result
       /// </summary>
       /// <param name="results">Input Async Result Collection</param>
       /// <param name="assertion">The assertion to execute</param>
+      /// <param name="assertionMessage">The message in the AssertionException when the assertion fails</param>
       /// <typeparam name="TSucc">Input type</typeparam>
       /// <returns>Collection after executing function on each element</returns>
-      public static IEnumerable<Task<Result<TSucc>>> AssertEach<TSucc>(this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc, Result<bool>> assertion) 
+      public static IEnumerable<Task<Result<TSucc>>> AssertEach<TSucc>(this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc?, Result<bool>> assertion, string? assertionMessage = null) 
          where TSucc : notnull
       {
-         return results.Select(x => x.Assert(assertion));
+         return results.Select(x => x.Assert(assertion, assertionMessage));
       }
 
       /// <summary>
@@ -420,12 +423,13 @@ namespace CSharp_Result
       /// <param name="results">Input Async Result Collection</param>
       /// <param name="assertion">The assertion to execute</param>
       /// <param name="mapException">The mapping function for the error</param>
+      /// <param name="assertionMessage">The message in the AssertionException when the assertion fails</param>
       /// <typeparam name="TSucc">Input type</typeparam>
       /// <returns>Collection after executing function on each element</returns>
-      public static IEnumerable<Task<Result<TSucc>>> AssertEach<TSucc>(this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc, bool> assertion, ExceptionFilter mapException) 
+      public static IEnumerable<Task<Result<TSucc>>> AssertEach<TSucc>(this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc?, bool> assertion, ExceptionFilter mapException, string? assertionMessage = null) 
          where TSucc : notnull
       {
-         return results.Select(x => x.Assert(assertion, mapException));
+         return results.Select(x => x.Assert(assertion, mapException, assertionMessage));
       }
       
       /// <summary>

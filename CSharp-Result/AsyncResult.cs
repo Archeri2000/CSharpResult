@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using static CSharp_Result.Errors;
 
@@ -151,10 +152,7 @@ namespace CSharp_Result
       /// <returns>If value in Result is null, returns a NulLReferenceException as Failure</returns>
       public static async Task<Result<TSucc>> AssertNotNull<TSucc>(this Task<Result<TSucc>> result)
       {
-         return (await result).Match(
-            Success: x => (Result<TSucc>)x??(Result<TSucc>)new NullReferenceException(),
-            Failure: x => x
-         );
+         return (await result).AssertNotNull();
       }
       
       /// <summary>
@@ -249,15 +247,11 @@ namespace CSharp_Result
       /// <typeparam name="TInput">Type of the input Result</typeparam>
       /// <typeparam name="T">Return type of the function</typeparam>
       /// <returns>Object of type T</returns>
-      public static async Task<T> MatchAwait<TInput, T>(this Task<Result<TInput>> res, Func<TInput, Task<T>> Success, Func<Exception, Task<T>> Failure)
+      [SuppressMessage("ReSharper", "InconsistentNaming")]
+      public static async Task<T> MatchAwait<TInput, T>(this Task<Result<TInput>> res, Func<TInput?, Task<T>> Success, Func<Exception?, Task<T>> Failure)
          where TInput : notnull
       {
-         var result = await res switch
-         {
-            Success<TInput> s => Success(s),
-            Failure<TInput> e => Failure(e),
-            _ => throw new NotSupportedException("Unable to match Result with non Success or Failure!")
-         };
+         var result = (await res).Match(Success, Failure);
          return await result;
       }
       
@@ -270,15 +264,11 @@ namespace CSharp_Result
       /// <param name="Success">Async function to execute on Success</param>
       /// <param name="Failure">Async function to execute on Failure</param>
       /// <typeparam name="TInput">Type of the input Result</typeparam>
-      public static async Task MatchAwait<TInput>(this Task<Result<TInput>> res, Func<TInput, Task> Success, Func<Exception, Task> Failure)
+      [SuppressMessage("ReSharper", "InconsistentNaming")]
+      public static async Task MatchAwait<TInput>(this Task<Result<TInput>> res, Func<TInput?, Task> Success, Func<Exception?, Task> Failure)
          where TInput : notnull
       {
-         var result = await res switch
-         {
-            Success<TInput> s => Success(s),
-            Failure<TInput> e => Failure(e),
-            _ => throw new NotSupportedException("Unable to match Result with non Success or Failure!")
-         };
+         var result = (await res).Match(Success, Failure);
          await result;
       }
       
@@ -521,24 +511,23 @@ namespace CSharp_Result
       {
          return res.Then(function.ToResultFunc(mapException));
       }
-      
+
       /// <summary>
       /// If holding a Success, checks if the result fulfils an async assertion. If not, returns an AssertionException as error
       /// </summary>
       /// <param name="res">Input Async Result</param>
       /// <param name="assertion">The assertion to execute</param>
+      /// <param name="assertionMessage">The message in the AssertionException when the assertion fails</param>
       /// <typeparam name="TSucc">Input type</typeparam>
       /// <returns>Async of either the Success, or a Failure</returns>
-      public static Task<Result<TSucc>> AssertAwait<TSucc>(this Task<Result<TSucc>> res, Func<TSucc, Task<Result<bool>>> assertion) 
+      public static Task<Result<TSucc>> AssertAwait<TSucc>(this Task<Result<TSucc>> res, Func<TSucc?, Task<Result<bool>>> assertion, string? assertionMessage = null) 
          where TSucc : notnull
       {
-         return res.ThenAwait(
-            async s =>
-            {
-                 if(await assertion(s).IsSuccess()) return s;
-                 return (Result<TSucc>)new AssertionException("Assertion returned false!");
-            }
-         );
+         var curr = res;
+         return res.ThenAwait(assertion)
+            .ThenAwait<bool, TSucc>(assertionResult => assertionResult?
+                     curr:
+                     Task.FromResult((Result<TSucc>)new AssertionException(assertionMessage??"Assertion returned false!")));
       }
 
       /// <summary>
@@ -547,13 +536,14 @@ namespace CSharp_Result
       /// </summary>
       /// <param name="res">Input Async Result</param>
       /// <param name="assertion">The assertion to execute</param>
+      /// <param name="assertionMessage">The message in the AssertionException when the assertion fails</param>
       /// <param name="mapException">The mapping function for the error</param>
       /// <typeparam name="TSucc">Input type</typeparam>
       /// <returns>Async of either the Success, or a Failure</returns>
-      public static Task<Result<TSucc>> AssertAwait<TSucc>(this Task<Result<TSucc>> res, Func<TSucc, Task<bool>> assertion, ExceptionFilter mapException) 
+      public static Task<Result<TSucc>> AssertAwait<TSucc>(this Task<Result<TSucc>> res, Func<TSucc?, Task<bool>> assertion, ExceptionFilter mapException, string? assertionMessage = null) 
          where TSucc : notnull
       {
-         return res.AssertAwait(assertion.ToAsyncResultFunc(mapException));
+         return res.AssertAwait(assertion.ToAsyncResultFunc(mapException), assertionMessage);
       }
 
       /// <summary>
@@ -561,12 +551,13 @@ namespace CSharp_Result
       /// </summary>
       /// <param name="res">Input Async Result</param>
       /// <param name="assertion">The assertion to execute</param>
+      /// <param name="assertionMessage">The message in the AssertionException when the assertion fails</param>
       /// <typeparam name="TSucc">Input type</typeparam>
       /// <returns>Async of either the Success, or a Failure</returns>
-      public static async Task<Result<TSucc>> Assert<TSucc>(this Task<Result<TSucc>> res, Func<TSucc, Result<bool>> assertion) 
+      public static async Task<Result<TSucc>> Assert<TSucc>(this Task<Result<TSucc>> res, Func<TSucc?, Result<bool>> assertion, string? assertionMessage = null) 
          where TSucc : notnull
       {
-         return (await res).Assert(assertion);
+         return (await res).Assert(assertion, assertionMessage);
       }
 
       /// <summary>
@@ -576,12 +567,13 @@ namespace CSharp_Result
       /// <param name="res">Input Async Result</param>
       /// <param name="assertion">The assertion to execute</param>
       /// <param name="mapException">The mapping function for the error</param>
+      /// <param name="assertionMessage">The message in the AssertionException when the assertion fails</param>
       /// <typeparam name="TSucc">Input type</typeparam>
       /// <returns>Async of either the Success, or a Failure</returns>
-      public static Task<Result<TSucc>> Assert<TSucc>(this Task<Result<TSucc>> res, Func<TSucc, bool> assertion, ExceptionFilter mapException) 
+      public static Task<Result<TSucc>> Assert<TSucc>(this Task<Result<TSucc>> res, Func<TSucc?, bool> assertion, ExceptionFilter mapException, string? assertionMessage = null) 
          where TSucc : notnull
       {
-         return res.Assert(assertion.ToResultFunc(mapException));
+         return res.Assert(assertion.ToResultFunc(mapException), assertionMessage);
       }
       
       /// <summary>
