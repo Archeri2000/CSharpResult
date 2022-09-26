@@ -119,7 +119,7 @@ namespace CSharp_Result
             {
                 return new AggregateException(innerExceptions);
             }
-            return new Success<IEnumerable<T>>(enumerable.GetSuccesses());
+            return new Result<IEnumerable<T>>(enumerable.GetSuccesses());
         }
         
         /// <summary>
@@ -137,7 +137,7 @@ namespace CSharp_Result
             }
             else
             {
-                return collection.SuccessOrDefault().Select(r => new Success<T>(r));
+                return collection.SuccessOrDefault().Select(r => new Result<T>(r));
             }
         }
         
@@ -244,13 +244,14 @@ namespace CSharp_Result
         /// </summary>
         /// <param name="results">Input Result Collection</param>
         /// <param name="assertion">The assertion to execute</param>
+        /// <param name="assertionMessage">The message in the AssertionException when the assertion fails</param>
         /// <typeparam name="TSucc">Input type</typeparam>
         /// <returns>Collection after executing function on each element</returns>
         public static IEnumerable<Result<TSucc>> AssertEach<TSucc>(this IEnumerable<Result<TSucc>> results,
-            Func<TSucc, Result<bool>> assertion)
+            Func<TSucc?, Result<bool>> assertion, string? assertionMessage = null)
             where TSucc: notnull
         {
-            return results.Select(x => x.Assert(assertion));
+            return results.Select(x => x.Assert(assertion, assertionMessage));
         }
         
         /// <summary>
@@ -259,13 +260,14 @@ namespace CSharp_Result
         /// <param name="results">Input Result Collection</param>
         /// <param name="assertion">The assertion to execute</param>
         /// <param name="mapException">The mapping function for the error</param>
+        /// <param name="assertionMessage">The message in the AssertionException when the assertion fails</param>
         /// <typeparam name="TSucc">Input type</typeparam>
         /// <returns>Collection after executing function on each element</returns>
         public static IEnumerable<Result<TSucc>> AssertEach<TSucc>(this IEnumerable<Result<TSucc>> results,
-            Func<TSucc, bool> assertion, ExceptionFilter mapException)
+            Func<TSucc?, bool> assertion, ExceptionFilter mapException, string? assertionMessage = null)
             where TSucc: notnull
         {
-            return results.Select(x => x.Assert(assertion, mapException));
+            return results.Select(x => x.Assert(assertion, mapException, assertionMessage));
         }
 
         /// <summary>

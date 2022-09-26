@@ -26,12 +26,29 @@ namespace CSharp_Result
         }
     }
 
+    /// <summary>
+    /// Exception that is returned when an Assert function fails.
+    /// </summary>
     public class AssertionException : Exception
     {
+        /// <summary>
+        /// Creates a new AssertionException
+        /// </summary>
         public AssertionException():base(){}
 
-        public AssertionException(string message) : base(message) {}
+        /// <summary>
+        /// Creates a new AssertionException that captures the exception message
+        /// </summary>
+        /// <param name="message">Exception message to capture</param>
+        public AssertionException(string? message) : base(message) {}
 
-        public AssertionException(string message, Exception inner) : base(message, inner){}
+        /// <summary>
+        /// Creates a new AssertionException that captures the exception message and an inner Exception
+        /// </summary>
+        /// <param name="message">Exception message to capture</param>
+        /// <param name="inner">Inner Exception</param>
+        public AssertionException(string? message, Exception? inner) : base(message, inner){}
+
     }
+    
 }
