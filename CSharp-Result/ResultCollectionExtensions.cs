@@ -18,7 +18,6 @@ namespace CSharp_Result
         /// <typeparam name="T">Type contained in Success</typeparam>
         /// <returns>True if all results are not Failures</returns>
         public static bool AllSucceed<T>(this IEnumerable<Result<T>> collection) 
-            where T : notnull
         {
             return collection.All(x => x.IsSuccess());
         }
@@ -30,7 +29,6 @@ namespace CSharp_Result
         /// <typeparam name="T">Type contained in Success</typeparam>
         /// <returns>True if at least one result is not a Failure</returns>
         public static bool AnySucceed<T>(this IEnumerable<Result<T>> collection) 
-            where T : notnull
         {
             return collection.Any(x => x.IsSuccess());
         }
@@ -42,7 +40,6 @@ namespace CSharp_Result
         /// <typeparam name="T">Type contained in Success</typeparam>
         /// <returns>True if all results are Failures</returns>
         public static bool AllFail<T>(this IEnumerable<Result<T>> collection) 
-            where T : notnull
         {
             return collection.All(x => x.IsFailure());
         }
@@ -54,7 +51,6 @@ namespace CSharp_Result
         /// <typeparam name="T">Type contained in Success</typeparam>
         /// <returns>True if at least one result is a Failure</returns>
         public static bool AnyFail<T>(this IEnumerable<Result<T>> collection) 
-            where T : notnull
         {
             return collection.Any(x => x.IsFailure());
         }
@@ -67,11 +63,10 @@ namespace CSharp_Result
         /// <typeparam name="TSucc">The type of the success wrapped</typeparam>
         /// <returns>The collection of successes if they all succeed</returns>
         /// <exception cref="AggregateException">The collection of exceptions if any fail</exception>
-        public static IEnumerable<TSucc> Get<TSucc>(this IEnumerable<Result<TSucc>> collection)
-            where TSucc : notnull
+        public static IEnumerable<TSucc?> Get<TSucc>(this IEnumerable<Result<TSucc>> collection)
         {
             var enumerable = collection.ToList();
-            var failures = enumerable.GetFailures().ToList();
+            IEnumerable<Exception> failures = enumerable.GetFailures().Where(x => x is not null).ToList()!;
             if (failures.Any())
             {
                 throw new AggregateException(failures);
@@ -85,8 +80,7 @@ namespace CSharp_Result
         /// <param name="collection">Collection of Results to filter</param>
         /// <typeparam name="T">Type contained in Success</typeparam>
         /// <returns>IEnumerable of all the Failures in the Collection</returns>
-        public static IEnumerable<Exception> GetFailures<T>(this IEnumerable<Result<T>> collection) 
-            where T : notnull
+        public static IEnumerable<Exception?> GetFailures<T>(this IEnumerable<Result<T>> collection) 
         {
             return collection.Where(x => x.IsFailure()).Select(x => x.FailureOrDefault());
         }
@@ -97,8 +91,7 @@ namespace CSharp_Result
         /// <param name="collection">Collection of Results to filter</param>
         /// <typeparam name="T">Type contained in Success</typeparam>
         /// <returns>IEnumerable of all the Successes in the Collection</returns>
-        public static IEnumerable<T> GetSuccesses<T>(this IEnumerable<Result<T>> collection) 
-            where T : notnull
+        public static IEnumerable<T?> GetSuccesses<T>(this IEnumerable<Result<T>> collection) 
         {
             return collection.Where(x => x.IsSuccess()).Select(x => x.SuccessOrDefault());
         }
@@ -109,17 +102,16 @@ namespace CSharp_Result
         /// <param name="collection">Collection of Results to filter</param>
         /// <typeparam name="T"></typeparam>
         /// <returns>A Result of a sequence</returns>
-        public static Result<IEnumerable<T>> ToResultOfSeq<T>(this IEnumerable<Result<T>> collection) 
-            where T : notnull
+        public static Result<IEnumerable<T?>> ToResultOfSeq<T>(this IEnumerable<Result<T>> collection) 
         {
             var enumerable = collection.ToList();
-            var errors = enumerable.GetFailures();
+            IEnumerable<Exception> errors = enumerable.GetFailures().Where(x => x is not null)!;
             var innerExceptions = errors.ToList();
             if (innerExceptions.Any())
             {
                 return new AggregateException(innerExceptions);
             }
-            return new Result<IEnumerable<T>>(enumerable.GetSuccesses());
+            return new Result<IEnumerable<T?>>(enumerable.GetSuccesses());
         }
         
         /// <summary>
@@ -128,17 +120,12 @@ namespace CSharp_Result
         /// <param name="collection">Result of collection to process</param>
         /// <typeparam name="T">Type contained in sequence</typeparam>
         /// <returns>A sequence of results</returns>
-        public static IEnumerable<Result<T>> ToSeqOfResults<T>(this Result<IEnumerable<T>> collection) 
-            where T : notnull
+        public static IEnumerable<Result<T>>? ToSeqOfResults<T>(this Result<IEnumerable<T>> collection) 
         {
-            if (collection.IsFailure())
-            {
-                return new List<Result<T>>{collection.FailureOrDefault()};
-            }
-            else
-            {
-                return collection.SuccessOrDefault().Select(r => new Result<T>(r));
-            }
+            return collection.Match(
+                Success: v => v?.Select(r => new Result<T>(r)),
+                Failure: e => new List<Result<T>> { e }
+            );
         }
         
         /// <summary>
@@ -151,9 +138,7 @@ namespace CSharp_Result
         /// <typeparam name="TResult">The type of the result of the computation (unused)</typeparam>
         /// <returns>Collection after executing function on each element</returns>
         public static IEnumerable<Result<TSucc>> DoEach<TSucc, TResult>(this IEnumerable<Result<TSucc>> results, DoType type,
-            Func<TSucc, Result<TResult>> function)
-            where TSucc: notnull
-            where TResult: notnull
+            Func<TSucc?, Result<TResult>> function)
         {
             return results.Select(x => x.Do(type, function));
         }
@@ -169,8 +154,7 @@ namespace CSharp_Result
         /// <typeparam name="TResult">The type of the result of the computation (unused)</typeparam>
         /// <returns>Collection after executing function on each element</returns>
         public static IEnumerable<Result<TSucc>> DoEach<TSucc, TResult>(this IEnumerable<Result<TSucc>> results, DoType type,
-            Func<TSucc, TResult> function, ExceptionFilter mapException)
-            where TSucc: notnull
+            Func<TSucc?, TResult> function, ExceptionFilter mapException)
         {
             return results.Select(x => x.Do(type, function, mapException));
         }
@@ -185,8 +169,7 @@ namespace CSharp_Result
         /// <typeparam name="TSucc">Input type</typeparam>
         /// <returns>Collection after executing function on each element</returns>
         public static IEnumerable<Result<TSucc>> DoEach<TSucc>(this IEnumerable<Result<TSucc>> results, DoType type,
-            Action<TSucc> function, ExceptionFilter mapException)
-            where TSucc: notnull
+            Action<TSucc?> function, ExceptionFilter mapException)
         {
             return results.Select(x => x.Do(type, function, mapException));
         }
@@ -200,9 +183,7 @@ namespace CSharp_Result
         /// <typeparam name="TResult">The type of the result of the computation</typeparam>
         /// <returns>Collection after executing function on each element</returns>
         public static IEnumerable<Result<TResult>> ThenEach<TSucc, TResult>(this IEnumerable<Result<TSucc>> results,
-            Func<TSucc, Result<TResult>> function)
-            where TSucc: notnull
-            where TResult: notnull
+            Func<TSucc?, Result<TResult>> function)
         {
             return results.Select(x => x.Then(function));
         }
@@ -217,9 +198,7 @@ namespace CSharp_Result
         /// <typeparam name="TResult">The type of the result of the computation</typeparam>
         /// <returns>Collection after executing function on each element</returns>
         public static IEnumerable<Result<TResult>> ThenEach<TSucc, TResult>(this IEnumerable<Result<TSucc>> results,
-            Func<TSucc, TResult> function, ExceptionFilter mapException)
-            where TSucc: notnull
-            where TResult: notnull
+            Func<TSucc?, TResult> function, ExceptionFilter mapException)
         {
             return results.Select(x => x.Then(function, mapException));
         }
@@ -233,8 +212,7 @@ namespace CSharp_Result
         /// <typeparam name="TSucc">Input type</typeparam>
         /// <returns>Collection after executing function on each element</returns>
         public static IEnumerable<Result<Unit>> ThenEach<TSucc>(this IEnumerable<Result<TSucc>> results,
-            Action<TSucc> function, ExceptionFilter mapException)
-            where TSucc: notnull
+            Action<TSucc?> function, ExceptionFilter mapException)
         {
             return results.Select(x => x.Then(function, mapException));
         }
@@ -249,7 +227,6 @@ namespace CSharp_Result
         /// <returns>Collection after executing function on each element</returns>
         public static IEnumerable<Result<TSucc>> AssertEach<TSucc>(this IEnumerable<Result<TSucc>> results,
             Func<TSucc?, Result<bool>> assertion, string? assertionMessage = null)
-            where TSucc: notnull
         {
             return results.Select(x => x.Assert(assertion, assertionMessage));
         }
@@ -265,7 +242,6 @@ namespace CSharp_Result
         /// <returns>Collection after executing function on each element</returns>
         public static IEnumerable<Result<TSucc>> AssertEach<TSucc>(this IEnumerable<Result<TSucc>> results,
             Func<TSucc?, bool> assertion, ExceptionFilter mapException, string? assertionMessage = null)
-            where TSucc: notnull
         {
             return results.Select(x => x.Assert(assertion, mapException, assertionMessage));
         }
@@ -315,7 +291,7 @@ namespace CSharp_Result
         /// <returns>Collection after executing function on each element</returns>
         [SuppressMessage("ReSharper", "InconsistentNaming")]
         public static void MatchEach<TSucc>(this IEnumerable<Result<TSucc>> results,
-            Action<TSucc> Success, Action<Exception> Failure)
+            Action<TSucc?> Success, Action<Exception?> Failure)
         {
             foreach(var x in results)
             {
