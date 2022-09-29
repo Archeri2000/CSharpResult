@@ -5,14 +5,14 @@
         <TargetFramework>net5.0</TargetFramework>
         <RootNamespace>CSharp_Result</RootNamespace>
         <LangVersion>9.0</LangVersion>
-        <Authors>archery2000</Authors>
+        <Authors>Archeri2000</Authors>
         <Description>A C# Result Type for Railway Oriented Programming</Description>
-        <Copyright>archery2000</Copyright>
-        <PackageProjectUrl>https://github.com/archery2000/CSharpResult</PackageProjectUrl>
-        <RepositoryUrl>https://github.com/archery2000/CSharpResult.git</RepositoryUrl>
+        <Copyright>Archeri2000</Copyright>
+        <PackageProjectUrl>https://github.com/archeri2000/CSharpResult</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/archeri2000/CSharpResult.git</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <Version>0.0.5</Version>
+        <Version>0.1.0</Version>
         <Nullable>enable</Nullable>
     </PropertyGroup>
 

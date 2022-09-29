@@ -42,7 +42,7 @@ We use [SemVer](https://semver.org/) for versioning. For the versions available,
 |0.0.1| Initial Release.                                                               |
 
 ## Authors
-* [Archeri2000](mailto:ong.yh@atomi.cloud) 
+* [Archeri2000](mailto:cheri.yuhann@outlook.com) 
 
 ## License
 This project is licensed under MIT - see the [LICENSE.md](LICENSE.MD) file for details
