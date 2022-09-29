@@ -1,5 +1,6 @@
 # Documentation
 
+### NOTE: The documentation is slightly outdated as new utility methods have been added. New documentation will be coming soon!
 ## Overview
 This library uses 5 method keywords to describe possible computation types. 
 Each of these methods can be further modified by adding **Await** to add Async Effects, and **Each** to operate over a collection
