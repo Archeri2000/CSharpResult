@@ -2,18 +2,18 @@
 
 A C# Result Type to facilitate Railway Oriented Programming.
 
-Latest Version: 0.0.4
+Latest Version: 0.1.0
 
 # Getting Started
 
 Install via Nuget
 ```bash
-$ dotnet add package CSharp-Result --version 0.0.4
+$ dotnet add package CSharp-Result --version 0.1.0
 ```
 
 Install via Package Manager
 ```bash
-Install-Package CSharp-Result -Version 0.0.4
+Install-Package CSharp-Result -Version 0.1.0
 ```
 
 # Usage
@@ -33,15 +33,16 @@ Please read [CONTRIBUTING.md](CONTRIBUTING.MD) for details on our code of conduc
 We use [SemVer](https://semver.org/) for versioning. For the versions available, see the tags on this repository.
 
 ## Changelog
-| Version | Changes |
-|---|---|
-|0.0.4|Override .Equals and .GetHashCode to compare wrapped types.
-|0.0.3|Add Get function to all Result Types.
-|0.0.2|Added Documentation to Nuget Package.
-|0.0.1|Initial Release.
+| Version | Changes                                                                        |
+|---|--------------------------------------------------------------------------------|
+|0.1.0| Rewrote Result using a struct, changed If to Assert, added new If expressions. |
+|0.0.4| Override .Equals and .GetHashCode to compare wrapped types.                    |
+|0.0.3| Add Get function to all Result Types.                                          |
+|0.0.2| Added Documentation to Nuget Package.                                          |
+|0.0.1| Initial Release.                                                               |
 
 ## Authors
-* [archery2000](mailto:ong.yh@atomi.cloud) 
+* [Archeri2000](mailto:cheri.yuhann@outlook.com) 
 
 ## License
 This project is licensed under MIT - see the [LICENSE.md](LICENSE.MD) file for details
