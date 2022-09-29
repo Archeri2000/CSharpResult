@@ -441,7 +441,7 @@ namespace CSharp_Result
       /// <param name="Then">The function to execute if predicate returns True</param>
       /// <param name="Else">The function to execute if predicate returns False</param>
       /// <returns>Collection after executing function on each element</returns>
-      public static IEnumerable<Task<Result<TResult>>> IfEach<TSucc, TResult>(this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc,Result<bool>> predicate, Func<TSucc, Result<TResult>> Then, Func<TSucc, Result<TResult>> Else)
+      public static IEnumerable<Task<Result<TResult>>> IfEach<TSucc, TResult>(this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc?,Result<bool>> predicate, Func<TSucc?, Result<TResult>> Then, Func<TSucc?, Result<TResult>> Else)
       {
          return results.Select(x => x.If(predicate, Then, Else));
       }

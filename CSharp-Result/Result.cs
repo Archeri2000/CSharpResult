@@ -327,7 +327,11 @@ namespace CSharp_Result
         [SuppressMessage("ReSharper", "InconsistentNaming")]
         public Result<TResult> If<TResult>(Func<TSucc?,Result<bool>> predicate, Func<TSucc?, Result<TResult>> Then, Func<TSucc?, Result<TResult>> Else)
         {
-            return this.Then(s => predicate(s).IsSuccess() ? Then(s) : Else(s));
+            var curr = _value;
+            return this.Then(predicate)
+                .Then(predicateResult => predicateResult ? 
+                    Then(curr): 
+                    Else(curr));
         }
 
         /// <summary>

@@ -282,9 +282,9 @@ namespace CSharp_Result
         [SuppressMessage("ReSharper", "InconsistentNaming")]
         public static IEnumerable<Result<TResult>> IfEach<TSucc, TResult>(
             this IEnumerable<Result<TSucc>> results,
-            Func<TSucc, Result<bool>> predicate, 
-            Func<TSucc, Result<TResult>> Then, 
-            Func<TSucc, Result<TResult>> Else)
+            Func<TSucc?, Result<bool>> predicate, 
+            Func<TSucc?, Result<TResult>> Then, 
+            Func<TSucc?, Result<TResult>> Else)
         {
             return results.Select(x => x.If(predicate, Then, Else));
         }
@@ -300,7 +300,7 @@ namespace CSharp_Result
         /// <returns>Collection after executing function on each element</returns>
         [SuppressMessage("ReSharper", "InconsistentNaming")]
         public static IEnumerable<TResult> MatchEach<TSucc, TResult>(this IEnumerable<Result<TSucc>> results,
-            Func<TSucc, TResult> Success, Func<Exception, TResult> Failure)
+            Func<TSucc?, TResult> Success, Func<Exception?, TResult> Failure)
         {
             return results.Select(x => x.Match(Success, Failure));
         }
