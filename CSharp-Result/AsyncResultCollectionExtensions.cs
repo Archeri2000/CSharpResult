@@ -99,11 +99,11 @@ namespace CSharp_Result
         /// <typeparam name="TSucc">The type of the success wrapped</typeparam>
         /// <returns>The collection of successes if they all succeed</returns>
         /// <exception cref="AggregateException">The collection of exceptions if any fail</exception>
-        public static async Task<IEnumerable<TSucc?>> Get<TSucc>(this IEnumerable<Task<Result<TSucc>>> collection)
+        public static async Task<IEnumerable<TSucc>> Get<TSucc>(this IEnumerable<Task<Result<TSucc>>> collection)
             where TSucc : notnull
         {
             var failures = new List<Exception>();
-            var successes = new List<TSucc?>();
+            var successes = new List<TSucc>();
             await foreach (var result in collection.ToIAsyncEnumerable())
             {
                 if (result.IsFailure())
@@ -113,7 +113,7 @@ namespace CSharp_Result
                 }
                 else
                 {
-                    successes.Add(result.SuccessOrDefault());
+                    successes.Add(result.SuccessOrDefault()!);
                 }
             }
 
@@ -131,14 +131,14 @@ namespace CSharp_Result
         /// <param name="collection">Collection of Async Results to filter</param>
         /// <typeparam name="T">Type contained in Success</typeparam>
         /// <returns>IEnumerable of all the Failures in the Collection</returns>
-        public static async IAsyncEnumerable<Exception?> GetFailures<T>(this IEnumerable<Task<Result<T>>> collection)
+        public static async IAsyncEnumerable<Exception> GetFailures<T>(this IEnumerable<Task<Result<T>>> collection)
             where T : notnull
         {
             await foreach (var result in collection.ToIAsyncEnumerable())
             {
                 if (result.IsFailure())
                 {
-                    yield return result.FailureOrDefault();
+                    yield return result.FailureOrDefault()!;
                 }
             }
         }
@@ -149,14 +149,14 @@ namespace CSharp_Result
         /// <param name="collection">Collection of Async Results to filter</param>
         /// <typeparam name="T">Type contained in Success</typeparam>
         /// <returns>IEnumerable of all the Successes in the Collection</returns>
-        public static async IAsyncEnumerable<T?> GetSuccesses<T>(this IEnumerable<Task<Result<T>>> collection)
+        public static async IAsyncEnumerable<T> GetSuccesses<T>(this IEnumerable<Task<Result<T>>> collection)
             where T : notnull
         {
             await foreach (var result in collection.ToIAsyncEnumerable())
             {
                 if (result.IsSuccess())
                 {
-                    yield return result.SuccessOrDefault();
+                    yield return result.SuccessOrDefault()!;
                 }
             }
         }
@@ -211,7 +211,7 @@ namespace CSharp_Result
         /// <typeparam name="TResult">The type of the result of the computation (unused)</typeparam>
         /// <returns>Collection after executing function on each element</returns>
         public static IEnumerable<Task<Result<TSucc>>> DoAwaitEach<TSucc, TResult>(
-            this IEnumerable<Task<Result<TSucc>>> results, DoType type, Func<TSucc?, Task<Result<TResult>>> function)
+            this IEnumerable<Task<Result<TSucc>>> results, DoType type, Func<TSucc, Task<Result<TResult>>> function)
         {
             return results.Select(x => x.DoAwait(type, function));
         }
@@ -227,7 +227,7 @@ namespace CSharp_Result
         /// <typeparam name="TResult">The type of the result of the computation (unused)</typeparam>
         /// <returns>Collection after executing function on each element</returns>
         public static IEnumerable<Task<Result<TSucc>>> DoAwaitEach<TSucc, TResult>(
-            this IEnumerable<Task<Result<TSucc>>> results, DoType type, Func<TSucc?, Task<TResult>> function,
+            this IEnumerable<Task<Result<TSucc>>> results, DoType type, Func<TSucc, Task<TResult>> function,
             ExceptionFilter mapException)
         {
             return results.Select(x => x.DoAwait(type, function, mapException));
@@ -243,7 +243,7 @@ namespace CSharp_Result
         /// <typeparam name="TSucc">Input type</typeparam>
         /// <returns>Collection after executing function on each element</returns>
         public static IEnumerable<Task<Result<TSucc>>> DoAwaitEach<TSucc>(this IEnumerable<Task<Result<TSucc>>> results,
-            DoType type, Func<TSucc?, Task> function, ExceptionFilter mapException)
+            DoType type, Func<TSucc, Task> function, ExceptionFilter mapException)
         {
             return results.Select(x => x.DoAwait(type, function, mapException));
         }
@@ -258,7 +258,7 @@ namespace CSharp_Result
         /// <typeparam name="TResult">The type of the result of the computation (unused)</typeparam>
         /// <returns>Collection after executing function on each element</returns>
         public static IEnumerable<Task<Result<TSucc>>> DoEach<TSucc, TResult>(
-            this IEnumerable<Task<Result<TSucc>>> results, DoType type, Func<TSucc?, Result<TResult>> function)
+            this IEnumerable<Task<Result<TSucc>>> results, DoType type, Func<TSucc, Result<TResult>> function)
         {
             return results.Select(x => x.Do(type, function));
         }
@@ -274,7 +274,7 @@ namespace CSharp_Result
         /// <typeparam name="TResult">The type of the result of the computation (unused)</typeparam>
         /// <returns>Collection after executing function on each element</returns>
         public static IEnumerable<Task<Result<TSucc>>> DoEach<TSucc, TResult>(
-            this IEnumerable<Task<Result<TSucc>>> results, DoType type, Func<TSucc?, TResult> function,
+            this IEnumerable<Task<Result<TSucc>>> results, DoType type, Func<TSucc, TResult> function,
             ExceptionFilter mapException)
         {
             return results.Select(x => x.Do(type, function, mapException));
@@ -290,7 +290,7 @@ namespace CSharp_Result
         /// <typeparam name="TSucc">Input type</typeparam>
         /// <returns>Collection after executing function on each element</returns>
         public static IEnumerable<Task<Result<TSucc>>> DoEach<TSucc>(this IEnumerable<Task<Result<TSucc>>> results,
-            DoType type, Action<TSucc?> function, ExceptionFilter mapException)
+            DoType type, Action<TSucc> function, ExceptionFilter mapException)
         {
             return results.Select(x => x.Do(type, function, mapException));
         }
@@ -304,7 +304,7 @@ namespace CSharp_Result
         /// <typeparam name="TResult">The type of the result of the computation</typeparam>
         /// <returns>Collection after executing function on each element</returns>
         public static IEnumerable<Task<Result<TResult>>> ThenAwaitEach<TSucc, TResult>(
-            this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc?, Task<Result<TResult>>> function)
+            this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc, Task<Result<TResult>>> function)
         {
             return results.Select(x => x.ThenAwait(function));
         }
@@ -319,7 +319,7 @@ namespace CSharp_Result
         /// <typeparam name="TResult">The type of the result of the computation</typeparam>
         /// <returns>Collection after executing function on each element</returns>
         public static IEnumerable<Task<Result<TResult>>> ThenAwaitEach<TSucc, TResult>(
-            this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc?, Task<TResult>> function,
+            this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc, Task<TResult>> function,
             ExceptionFilter mapException)
         {
             return results.Select(x => x.ThenAwait(function, mapException));
@@ -334,7 +334,7 @@ namespace CSharp_Result
         /// <typeparam name="TSucc">Input type</typeparam>
         /// <returns>Collection after executing function on each element</returns>
         public static IEnumerable<Task<Result<Unit>>> ThenAwaitEach<TSucc>(
-            this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc?, Task> function, ExceptionFilter mapException)
+            this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc, Task> function, ExceptionFilter mapException)
         {
             return results.Select(x => x.ThenAwait(function, mapException));
         }
@@ -348,7 +348,7 @@ namespace CSharp_Result
         /// <typeparam name="TResult">The type of the result of the computation</typeparam>
         /// <returns>Collection after executing function on each element</returns>
         public static IEnumerable<Task<Result<TResult>>> ThenEach<TSucc, TResult>(
-            this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc?, Result<TResult>> function)
+            this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc, Result<TResult>> function)
         {
             return results.Select(x => x.Then(function));
         }
@@ -363,7 +363,7 @@ namespace CSharp_Result
         /// <typeparam name="TResult">The type of the result of the computation</typeparam>
         /// <returns>Collection after executing function on each element</returns>
         public static IEnumerable<Task<Result<TResult>>> ThenEach<TSucc, TResult>(
-            this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc?, TResult> function, ExceptionFilter mapException)
+            this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc, TResult> function, ExceptionFilter mapException)
         {
             return results.Select(x => x.Then(function, mapException));
         }
@@ -377,7 +377,7 @@ namespace CSharp_Result
         /// <typeparam name="TSucc">Input type</typeparam>
         /// <returns>Collection after executing function on each element</returns>
         public static IEnumerable<Task<Result<Unit>>> ThenEach<TSucc>(this IEnumerable<Task<Result<TSucc>>> results,
-            Action<TSucc?> function, ExceptionFilter mapException)
+            Action<TSucc> function, ExceptionFilter mapException)
         {
             return results.Select(x => x.Then(function, mapException));
         }
@@ -391,7 +391,7 @@ namespace CSharp_Result
         /// <typeparam name="TSucc">Input type</typeparam>
         /// <returns>Collection after executing function on each element</returns>
         public static IEnumerable<Task<Result<TSucc>>> AssertAwaitEach<TSucc>(
-            this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc?, Task<Result<bool>>> assertion,
+            this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc, Task<Result<bool>>> assertion,
             string? assertionMessage = null)
         {
             return results.Select(x => x.AssertAwait(assertion, assertionMessage));
@@ -407,7 +407,7 @@ namespace CSharp_Result
         /// <typeparam name="TSucc">Input type</typeparam>
         /// <returns>Collection after executing function on each element</returns>
         public static IEnumerable<Task<Result<TSucc>>> AssertAwaitEach<TSucc>(
-            this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc?, Task<bool>> assertion,
+            this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc, Task<bool>> assertion,
             ExceptionFilter mapException, string? assertionMessage = null)
         {
             return results.Select(x => x.AssertAwait(assertion, mapException, assertionMessage));
@@ -422,7 +422,7 @@ namespace CSharp_Result
         /// <typeparam name="TSucc">Input type</typeparam>
         /// <returns>Collection after executing function on each element</returns>
         public static IEnumerable<Task<Result<TSucc>>> AssertEach<TSucc>(this IEnumerable<Task<Result<TSucc>>> results,
-            Func<TSucc?, Result<bool>> assertion, string? assertionMessage = null)
+            Func<TSucc, Result<bool>> assertion, string? assertionMessage = null)
         {
             return results.Select(x => x.Assert(assertion, assertionMessage));
         }
@@ -437,7 +437,7 @@ namespace CSharp_Result
         /// <typeparam name="TSucc">Input type</typeparam>
         /// <returns>Collection after executing function on each element</returns>
         public static IEnumerable<Task<Result<TSucc>>> AssertEach<TSucc>(this IEnumerable<Task<Result<TSucc>>> results,
-            Func<TSucc?, bool> assertion, ExceptionFilter mapException, string? assertionMessage = null)
+            Func<TSucc, bool> assertion, ExceptionFilter mapException, string? assertionMessage = null)
         {
             return results.Select(x => x.Assert(assertion, mapException, assertionMessage));
         }
@@ -453,8 +453,8 @@ namespace CSharp_Result
         /// <returns>Collection after executing function on each element</returns>
         [SuppressMessage("ReSharper", "InconsistentNaming")]
         public static IEnumerable<Task<Result<TResult>>> IfEach<TSucc, TResult>(
-            this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc?, Result<bool>> predicate,
-            Func<TSucc?, Result<TResult>> Then, Func<TSucc?, Result<TResult>> Else)
+            this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc, Result<bool>> predicate,
+            Func<TSucc, Result<TResult>> Then, Func<TSucc, Result<TResult>> Else)
         {
             return results.Select(x => x.If(predicate, Then, Else));
         }
@@ -470,8 +470,8 @@ namespace CSharp_Result
         /// <returns>Collection after executing function on each element</returns>
         [SuppressMessage("ReSharper", "InconsistentNaming")]
         public static IEnumerable<Task<Result<TResult>>> IfAwaitEach<TSucc, TResult>(
-            this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc?, Task<Result<bool>>> predicate,
-            Func<TSucc?, Task<Result<TResult>>> Then, Func<TSucc?, Task<Result<TResult>>> Else)
+            this IEnumerable<Task<Result<TSucc>>> results, Func<TSucc, Task<Result<bool>>> predicate,
+            Func<TSucc, Task<Result<TResult>>> Then, Func<TSucc, Task<Result<TResult>>> Else)
         {
             return results.Select(x => x.IfAwait(predicate, Then, Else));
         }
@@ -488,7 +488,7 @@ namespace CSharp_Result
         [SuppressMessage("ReSharper", "InconsistentNaming")]
         public static IEnumerable<Task<TResult>> MatchAwaitEach<TSucc, TResult>(
             this IEnumerable<Task<Result<TSucc>>> results,
-            Func<TSucc?, Task<TResult>> Success, Func<Exception?, Task<TResult>> Failure)
+            Func<TSucc, Task<TResult>> Success, Func<Exception, Task<TResult>> Failure)
         {
             return results.Select(x => x.MatchAwait(Success, Failure));
         }
@@ -503,7 +503,7 @@ namespace CSharp_Result
         /// <returns>Collection after executing function on each element</returns>
         [SuppressMessage("ReSharper", "InconsistentNaming")]
         public static IEnumerable<Task> MatchAwaitEach<TSucc>(this IEnumerable<Task<Result<TSucc>>> results,
-            Func<TSucc?, Task> Success, Func<Exception?, Task> Failure)
+            Func<TSucc, Task> Success, Func<Exception, Task> Failure)
         {
             return results.Select(x => x.MatchAwait(Success, Failure));
         }
@@ -520,7 +520,7 @@ namespace CSharp_Result
         [SuppressMessage("ReSharper", "InconsistentNaming")]
         public static IEnumerable<Task<TResult>> MatchEach<TSucc, TResult>(
             this IEnumerable<Task<Result<TSucc>>> results,
-            Func<TSucc?, TResult> Success, Func<Exception?, TResult> Failure)
+            Func<TSucc, TResult> Success, Func<Exception, TResult> Failure)
         {
             return results.Select(x => x.Match(Success, Failure));
         }
@@ -535,7 +535,7 @@ namespace CSharp_Result
         /// <returns>Collection after executing function on each element</returns>
         [SuppressMessage("ReSharper", "InconsistentNaming")]
         public static IEnumerable<Task> MatchEach<TSucc>(this IEnumerable<Task<Result<TSucc>>> results,
-            Action<TSucc?> Success, Action<Exception?> Failure)
+            Action<TSucc> Success, Action<Exception> Failure)
         {
             return results.Select(x => x.Match(Success, Failure));
         }
