@@ -2,8 +2,7 @@
 
 A C# Result Type to facilitate Railway Oriented Programming.
 
-Latest Version: 0.1.0
-
+Latest Version: 0.2.0
 # Getting Started
 
 Install via Nuget
@@ -35,6 +34,7 @@ We use [SemVer](https://semver.org/) for versioning. For the versions available,
 ## Changelog
 | Version | Changes                                                                        |
 |---|--------------------------------------------------------------------------------|
+|0.2.0| Remove all nullable generic signature, allowing for notnullable enforcement |
 |0.1.0| Rewrote Result using a struct, changed If to Assert, added new If expressions. |
 |0.0.4| Override .Equals and .GetHashCode to compare wrapped types.                    |
 |0.0.3| Add Get function to all Result Types.                                          |
